@@ -1,23 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { useReducer, useState } from "react";
+import LeftSide from "./component/LeftSide";
+import Dashboard from "./component/MainBody";
+import { reducer, initialState } from "./component/reducer";
 
 function App() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const [activeButtonId, setActiveButtonId] = useState(2);
+
+  const handleClick = (id) => {
+    dispatch({ type: "CLICK_BUTTON", payload: id });
+    setActiveButtonId(id);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <LeftSide
+        state={state}
+        dispatch={dispatch}
+        activeButtonId={activeButtonId}
+        handleClick={handleClick}
+      />
+      <Dashboard activeButtonId={activeButtonId} />
     </div>
   );
 }
