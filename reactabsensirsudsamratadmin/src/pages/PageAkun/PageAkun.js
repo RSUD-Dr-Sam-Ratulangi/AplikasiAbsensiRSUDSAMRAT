@@ -17,8 +17,12 @@ export default function PageAkun() {
   const modalAkun = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredAkunData = akunData.filter((akun) =>
-    akun.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredAkunData = akunData.filter(
+    (akun) =>
+      akun.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      // akun.nik.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      akun.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      akun.employeeId.toString().includes(searchTerm)
   );
 
   const columns = [

@@ -56,7 +56,7 @@ const data = [
     name: "John Doe",
     time: "Selasa 1 Agustus 2023, 16:39",
     shift: "pagi",
-    category: "WFO",
+    category: "WoF",
     presence: "red",
   },
   {
@@ -64,22 +64,22 @@ const data = [
     name: "David Beckham",
     time: "Selasa 1 Agustus 2023, 16:39",
     shift: "pagi",
-    category: "WFO",
+    category: "FWO",
     presence: "green",
   },
   {
     id: 3,
     name: "Valentino Rossi",
     time: "Selasa 1 Agustus 2023, 16:39",
-    shift: "pagi",
+    shift: "sore",
     category: "WFO",
     presence: "yellow",
   },
   {
     id: 4,
     name: "Augustus Claudius",
-    time: "Selasa 1 Agustus 2023, 16:39",
-    shift: "pagi",
+    time: "Kamis 3 Agustus 2023, 16:39",
+    shift: "malam",
     category: "WFO",
     presence: "blue",
   },
@@ -106,8 +106,12 @@ const customStyles = {
 
 export default function PageAbsensi() {
   const [searchTerm, setSearchTerm] = useState("");
-  const filteredData = data.filter((data) =>
-    data.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredData = data.filter(
+    (data) =>
+      data.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      data.time.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      data.shift.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      data.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
