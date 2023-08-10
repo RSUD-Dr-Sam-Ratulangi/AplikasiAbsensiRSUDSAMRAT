@@ -46,7 +46,6 @@ app.use('/api', [], RouterApi);
       res.send('Halo Dunia');
     });
 
-    //ping
     RouterApi.get('/ping', MiddlewareVerifyToken, (req, res) => {
       res.send('pong');
     });

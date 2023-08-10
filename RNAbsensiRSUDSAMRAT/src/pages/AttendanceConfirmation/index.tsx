@@ -2,15 +2,22 @@ import { Image, StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'r
 import React, { useState } from 'react'
 import SwipeButton from 'rn-swipe-button'
 
-const AttendanceConfirmation = () => {
-    const [photo, setPhoto] = useState(require('./../../assets/images/confirmationPhoto.png'))
+const AttendanceConfirmation = ({imageData, navigation}: any) => {
 
+    const reOpenCamera = () => {
+        navigation?.replace('OpenCamera');
+    }
+    
+    const afterSwipe = () => {
+        navigation?.replace('AttendanceDone');
+    }
 return (
     <SafeAreaView style={styles.page}>
         <Text style={styles.title}>Konfirmasi Foto</Text>
         <View style={styles.photoContainer}>
             <Image 
-                source={photo}
+                source={{uri: 'file://' + imageData}}
+                // source={require('./../../assets/images/ProfilePicture.png')}
                 style={{
                     height: '100%',
                     width: '100%',
@@ -18,7 +25,12 @@ return (
                 }}
                 />
         </View>
-        <TouchableOpacity style={styles.button} activeOpacity={0.7}>
+        <TouchableOpacity 
+            style={styles.button}
+            activeOpacity={0.7}
+            onPress={()=> {
+                reOpenCamera();
+        }}>
             <Text style={{fontSize: 23, color: '#262D33', fontWeight: '600'}}>Take Again</Text>
         </TouchableOpacity>
         <View style={{width: '75%', marginTop: 20}}>
@@ -31,6 +43,7 @@ return (
                 thumbIconBorderColor='#fff'
                 titleStyles={{fontSize:23, color:'#fff', fontWeight:'600'}}
                 shouldResetAfterSuccess={true}
+                onSwipeSuccess={afterSwipe}
             />
         </View>
     </SafeAreaView>

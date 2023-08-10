@@ -6,6 +6,7 @@ import History from "./History";
 import Notification from "./Notification";
 import Profile from "./Profile";
 import AttendanceDone from "./AttendanceDone";
+import OpenCamera from "./OpenCamera";
 import AttendanceConfirmation from "./AttendanceConfirmation";
 
 export {
@@ -17,5 +18,6 @@ export {
     Notification,
     Profile,
     AttendanceConfirmation,
-    AttendanceDone
+    AttendanceDone,
+    OpenCamera,
 }

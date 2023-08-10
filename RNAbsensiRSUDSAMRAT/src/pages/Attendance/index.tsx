@@ -29,7 +29,7 @@ const Attendance = ({navigation}: any) => {
     };
 
     const handleClickCameraButton = () => {
-
+        navigation.push('OpenCamera')
     };
 
     return (
@@ -77,7 +77,7 @@ const Attendance = ({navigation}: any) => {
                     <TouchableOpacity style={[styles.attendanceButton, { backgroundColor: viewCColor, marginTop: 30, marginBottom: 20}]} onPress={handleViewCClick}>
                         <Text style={styles.specialButtonText}>Absen Khusus</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.specialButton, { backgroundColor: '#E9E005', marginTop: 30, marginBottom: 180, height: 100}]} onPress={handleClickCameraButton}>
+                    <TouchableOpacity style={[styles.specialButton, { backgroundColor: '#01A7A3', width: '80%',marginTop: 15, marginBottom: 180, height: 100}]} onPress={handleClickCameraButton}>
                         <Image 
                             source={require('./../../assets/icons/IconCamera.png')}
                             style={{width: 40, height: 40}}
