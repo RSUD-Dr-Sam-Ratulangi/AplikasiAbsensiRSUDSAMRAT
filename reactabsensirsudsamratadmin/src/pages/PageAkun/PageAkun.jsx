@@ -1,21 +1,46 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import {
   HiOutlinePlusSm,
   HiSearch,
   HiOutlinePencil,
   HiOutlineTrash,
-} from 'react-icons/hi';
-import ModalAkun from './ModalAkun';
-import DataTable from 'react-data-table-component';
-import { api } from '../../config/axios';
+} from "react-icons/hi";
+import ModalAkun from "./ModalAkun";
+import DataTable from "react-data-table-component";
+import { api } from "../../config/axios";
+import "react-toastify/dist/ReactToastify.css";
+import Popup from "reactjs-popup";
+import { toast } from "react-toastify";
 
 export default function PageAkun() {
-  const [modalAkunType, setModalAkunType] = useState(''); // ['create', 'edit']
+  const [modalAkunType, setModalAkunType] = useState(""); // ['create', 'edit']
   const [akunData, setAkunData] = useState([]);
-  const [selectedAkun, setSelectedAkun] = useState(null);
+  const [selectedAkun, setSelectedAkun] = useState([]);
   const [reloadApi, setReloadApi] = useState(false);
   const modalAkun = useRef(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const modalDelete = useRef(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deleteId, setDeleteId] = useState(null);
+
+  const deleteSuccess = () =>
+    toast("Akun berhasil di hapus", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "green" },
+    });
+
+  const deleteFailed = () =>
+    toast("Eror, akun tidak berhasil dihapus", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "red" },
+    });
 
   const filteredAkunData = akunData.filter((akun) =>
     akun.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -23,41 +48,43 @@ export default function PageAkun() {
 
   const columns = [
     {
-      name: 'ID',
+      name: "ID",
       selector: (row) => row.employeeId,
-      width: '50px',
+      width: "50px",
     },
     {
-      name: 'Name',
+      name: "Name",
       selector: (row) => row.name,
     },
     {
-      name: 'Password',
+      name: "Password",
       selector: (row) => row.password,
     },
     {
-      name: 'NIK',
+      name: "NIK",
       selector: (row) => row.nik,
     },
     {
-      name: 'Bidang/Jabatan',
+      name: "Bidang/Jabatan",
       selector: (row) => row.role,
     },
     {
-      name: 'Action',
+      name: "Action",
       cell: (row) => (
         <div>
           <button
             type="button"
             className="mr-2 text-white btn btn-sm bg-primary-2 hover:bg-primary-3"
-            onClick={() => handleEdit(row.employeeId)}
+            onClick={() => {
+              handleEdit(row);
+            }}
           >
             <HiOutlinePencil />
           </button>
           <button
             type="button"
             className="text-white bg-red-600 btn btn-sm hover:bg-red-700"
-            onClick={() => handleDelete(row.employeeId)}
+            onClick={() => handleDeleteModal(row.id)}
           >
             <HiOutlineTrash />
           </button>
@@ -68,8 +95,12 @@ export default function PageAkun() {
 
   useEffect(() => {
     // Fetch data from API
+    fetchData();
+  }, [reloadApi]);
+
+  const fetchData = async () => {
     api
-      .get('/api/v1/dev/employees')
+      .get("/api/v1/dev/employees")
       .then((res) => {
         console.log(res.data);
         setAkunData(res.data);
@@ -77,19 +108,32 @@ export default function PageAkun() {
       .catch((err) => {
         console.log(err);
       });
-  }, [reloadApi]);
+  };
 
   const handleEdit = (id) => {
-    setModalAkunType('edit');
-    // Find the selected akun
-    const selectedAkun = akunData.find((akun) => akun.employeeId === id);
-    setSelectedAkun(selectedAkun);
+    setModalAkunType("edit");
+    setSelectedAkun(id);
+    console.log(id);
     modalAkun.current.open();
   };
 
-  const handleDelete = (id) => {
-    // api.delete(`http://rsudsamrat.site:9999/api/v1/dev/employees/${id}`)
-    console.log(`Delete button clicked for row with id: ${id}`);
+  const handleDeleteModal = (id) => {
+    setDeleteId(id);
+    modalDelete.current.open();
+  };
+
+  const handleDelete = (deleteId) => {
+    api
+      .delete(`/api/v1/dev/employees/${deleteId}`)
+      .then((res) => {
+        console.log(res.data);
+        deleteSuccess();
+      })
+      .catch((err) => {
+        console.log(err);
+        deleteFailed();
+      });
+    modalDelete.current.close();
   };
 
   return (
@@ -97,25 +141,59 @@ export default function PageAkun() {
       <ModalAkun
         ref={modalAkun}
         type={modalAkunType}
-        data={filteredAkunData}
+        data={selectedAkun}
         onClose={() => {
           modalAkun.current.close();
           setReloadApi(!reloadApi);
           setSelectedAkun(null);
-          console.log('Modal closed');
+          fetchData();
+          console.log("Modal closed");
         }}
       />
-      <div>
+      <Popup
+        ref={modalDelete}
+        modal
+        contentStyle={{
+          borderRadius: "12px",
+          padding: "2rem",
+          width: "25rem",
+          height: "10rem",
+        }}
+      >
+        <div className="flex flex-col justify-center items-center gap-4">
+          <h1>apakah anda yakin ingin menghapus akun ini?</h1>
+          <div className="flex gap-4">
+            <button
+              className=" btn bg-primary-2 w-28"
+              onClick={() => {
+                handleDelete();
+              }}
+            >
+              Ya
+            </button>
+            <button
+              className="btn bg-red-500 w-28"
+              onClick={() => {
+                modalDelete.current.close();
+                setDeleteId(null);
+              }}
+            >
+              Tidak
+            </button>
+          </div>
+        </div>
+      </Popup>
+      <div className="">
         <h1 className="text-xl font-medium">Akun</h1>
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={() => {
-                setModalAkunType('create');
+                setModalAkunType("create");
                 modalAkun.current.open();
               }}
-              className="btn btn-primary flex items-center justify-center gap-2 px-8 py-3 font-semibold text-white rounded-md bg-primary-2"
+              className="flex items-center justify-center gap-2 px-8 py-3 font-semibold text-white rounded-md bg-primary-2"
             >
               <HiOutlinePlusSm />
               Buat Akun
@@ -132,14 +210,14 @@ export default function PageAkun() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div>
+          <div className="overflow-auto max-h-[60vh]">
             <DataTable
               columns={columns}
               data={filteredAkunData}
               customStyles={{
                 headCells: {
                   style: {
-                    fontWeight: 'bold',
+                    fontWeight: "bold",
                   },
                 },
               }}
