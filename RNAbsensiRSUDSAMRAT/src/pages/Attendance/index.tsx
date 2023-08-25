@@ -41,7 +41,7 @@ const Attendance = ({navigation}: any) => {
         if (userLocation && geolib.isPointWithinRadius(userLocation, centerCoordinate, circleRadius)) {
             // Jika lokasi pengguna berada dalam radius circle
             setEnabledAttendance(true);
-            // console.log('Enabled for absent', enabledAttendance);
+            console.log('Enabled for absent', enabledAttendance);
         }
     }, [userLocation]);
 

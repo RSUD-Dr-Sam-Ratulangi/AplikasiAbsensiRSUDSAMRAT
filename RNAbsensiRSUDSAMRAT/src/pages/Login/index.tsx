@@ -10,13 +10,14 @@ const Login = ({navigation}: any) => {
     const [nik, setNik] = useState('');
     const [password, setPassword] = useState('');
     const [dataUser, setDataUser] = useState();
+    const [error, setError] = useState('');
     
     const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
     
     const imageWidth = screenWidth * 1;
     const imageHeight = imageWidth * (2 / 1);
     
-    const url = 'http://192.168.142.208:3001/api/auth/login'; //local
+    const url = 'http://rsudsamrat.site:3001/api/auth/login';
     const data = {
         "nik": nik,
         "password": password
@@ -25,21 +26,22 @@ const Login = ({navigation}: any) => {
         'Content-Type': 'application/json'
     };
 
-    const storeAccessToken = async (token) => {
+    const storeAccessToken = async (token, nik) => {
         try {
-            await AsyncStorage.setItem('access_token', token);
-            console.log('Token berhasil disimpan.');
+            await AsyncStorage.multiSet([['access_token', token], ['nik', nik]]);
+            console.log('Token dan nik berhasil disimpan.');
         } catch (error) {
-            console.log('Gagal menyimpan token:', error);
+            console.log('Gagal menyimpan token dan nik:', error);
         }
     };
 
     const handleClickLogin = () => {
         axios.post(url, data, {headers})
         .then(function (response) {
-            const { access_token } = response.data.data
-            setDataUser(access_token)
-            storeAccessToken(access_token);
+            const { access_token, nik } = response.data.data
+
+            setDataUser(access_token);
+            storeAccessToken(access_token, nik);
             
             if(access_token){
                 navigation?.replace('Tabs');
@@ -71,6 +73,7 @@ const Login = ({navigation}: any) => {
             )
         });
     };
+
 
     return (
         <SafeAreaView style={styles.page}>

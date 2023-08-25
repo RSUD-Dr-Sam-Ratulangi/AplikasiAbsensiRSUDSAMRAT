@@ -1,12 +1,45 @@
 import { StyleSheet, Text, View, SafeAreaView, Image, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Ilustration1, ProfilePicture } from '../../assets/images'
 import AttendanceCard from '../../components/AttendanceCard';
 import AnnouncementCard from '../../components/AnnouncementCard';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
+    const [name, setName] = useState('');
 
-    const [name, setName] = useState('Leonardo Polandos, S.Kom');
+    const getNik = async () => {
+        try {
+            const nik = await AsyncStorage.getItem('nik');
+            const getUserData = () => {
+                console.log(nik)
+                axios.get(`http://rsudsamrat.site:9999/api/v1/dev/employees/nik/${nik}`)
+                .then(function (response){
+                    setName(response.data.name);
+                    const getEmployeeId = response.data.employeeId;
+                    const conEmployeeId = getEmployeeId.toString();
+                    setEmployeeId(conEmployeeId);
+                })
+            }
+            getUserData();
+        } catch (error) {
+            console.log('Gagal mengambil nik: ', error)
+        }
+    }
+
+    const setEmployeeId = async (employeeId) => {
+        try {
+            await AsyncStorage.setItem('employeeId', employeeId);
+            console.log('berhasil menyimpan employee id :', employeeId);
+        } catch (error) {
+            console.log('error:', error);
+        }
+    }
+
+    useEffect(() => {
+        getNik();
+    }, [])
 
     return (
         <SafeAreaView style={styles.page}>
@@ -14,7 +47,7 @@ const Home = () => {
                 <Image source={Ilustration1} style={styles.ilustration}/>
                 <View style={styles.header}>
                     <View style={styles.profilePicture}>
-                        <Image source={ProfilePicture}/>
+                        <Image source={ProfilePicture} style={{width: 86, height: 86, borderRadius: 43}} />
                     </View>
                     <View>
                         <Text style={styles.greeting}>Holla,</Text>
@@ -49,7 +82,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff'
     },
     ilustration:{
-        position: 'absolute'
+        position: 'absolute',
+
     },
     header:{
         marginTop: 50,
@@ -63,10 +97,6 @@ const styles = StyleSheet.create({
     profilePicture:{
         width: 86,
         height: 86,
-        borderRadius: 45,
-        borderWidth: 2,
-        justifyContent: 'center',
-        alignItems: 'center',
         marginRight: 14,
         marginBottom: 11,
     },

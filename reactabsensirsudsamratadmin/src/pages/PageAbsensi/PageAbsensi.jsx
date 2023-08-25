@@ -4,21 +4,24 @@ import DataTable from 'react-data-table-component';
 import { useState, useEffect } from 'react';
 import { api, apiCheckToken } from '../../config/axios';
 import { useDispatch } from 'react-redux';
-import { expiredToken } from '../../config/authState/authSlice'
+import { expiredToken } from '../../config/authState/authSlice';
 
 export default function PageAbsensi() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [absences, setAbsences] = useState([]);
+  const [filteredAbsences, setFilteredAbsences] = useState([]);
   const dispatch = useDispatch();
 
-  const filteredData = absences.filter((data) => {
-    const nameLower = data.name.toLowerCase();
-    const searchTermLower = searchTerm.toLowerCase();
-
-    // Menggunakan ekspresi reguler untuk pencocokan yang lebih akurat
-    const searchRegex = new RegExp(searchTermLower, 'g');
-    return nameLower.match(searchRegex);
-  });
+  const handleSearch = (e) => {
+    const { value } = e.target;
+    const newData = absences.filter((item) => {
+      const itemData = `${item.name.toUpperCase()} ${item.category.toUpperCase()}`;
+      const textData = value.toUpperCase();
+      return itemData.indexOf(textData) > -1;
+    });
+    setFilteredAbsences(newData);
+  };
 
   const columns = [
     {
@@ -75,32 +78,29 @@ export default function PageAbsensi() {
     }
   };
 
-  console.log(filteredData);
-  console.log(searchTerm);
-
   useEffect(() => {
     const fetchAbsences = async () => {
       try {
         const response = await apiCheckToken.get('/ping');
-        console.log(response.data)
-        if(response.data) {
+        console.log(response.data);
+        if (response.data) {
           try {
             const response = await api.get(
               '/api/v1/dev/attendances/all-with-schedule'
             );
             const data = response.data;
-    
+
             const ExtractData = data.map((attendance) => {
               const shiftStartTime = attendance.shift.start_time;
               const shiftEndTime = attendance.shift.end_time;
-    
+
               const clockIn = attendance.attendances[0]?.clockIn
                 ? new Date(attendance.attendances[0].clockIn)
                 : null;
               const clockOut = attendance.attendances[0]?.clockOut
                 ? new Date(attendance.attendances[0].clockOut)
                 : null;
-    
+
               const formatWaktu = (waktu) => {
                 const options = {
                   hour: '2-digit',
@@ -112,11 +112,14 @@ export default function PageAbsensi() {
               };
               const clockInTime = clockIn ? formatWaktu(clockIn) : null;
               const clockOutTime = clockOut ? formatWaktu(clockOut) : null;
-    
+
               let statusPenilaian = 'red'; // Default: Tidak ada data clock in atau clock out
-    
+
               if (clockInTime && clockOutTime) {
-                if (clockInTime <= shiftStartTime && clockOutTime >= shiftEndTime) {
+                if (
+                  clockInTime <= shiftStartTime &&
+                  clockOutTime >= shiftEndTime
+                ) {
                   statusPenilaian = 'green'; // Clock in sebelum start_time dan clock out setelah end_time
                 } else if (clockInTime > shiftStartTime) {
                   statusPenilaian = 'yellow'; // Clock in setelah start_time
@@ -126,15 +129,16 @@ export default function PageAbsensi() {
                   statusPenilaian = 'yellow'; // Clock in setelah start_time
                 }
               }
-    
+
               const employeeNamesString = attendance.attendances
                 .map((attendance) => attendance.employee.name)
                 .join(', ')
                 .replace(
                   /\w\S*/g,
-                  (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+                  (txt) =>
+                    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
                 );
-    
+
               return {
                 clockInTime: clockInTime,
                 clockOutTime: clockOutTime,
@@ -151,7 +155,7 @@ export default function PageAbsensi() {
               };
             });
             console.log(ExtractData);
-    
+
             setAbsences(ExtractData);
           } catch (error) {
             console.log(error);
@@ -159,12 +163,38 @@ export default function PageAbsensi() {
         }
       } catch (error) {
         console.log(error);
-        dispatch(expiredToken())
+        dispatch(expiredToken());
       }
     };
 
     fetchAbsences();
   }, []);
+
+  useEffect(() => {
+    if (startDate === null || endDate === null) {
+      return;
+    }
+
+    const startDateFormatted = startDate.split('-').join('-');
+    const endDateFormatted = endDate.split('-').join('-');
+
+    if (startDate > endDate) {
+      alert('Tanggal awal tidak boleh lebih besar dari tanggal akhir');
+      return;
+    }
+
+    setFilteredAbsences(
+      absences.filter((schedule) => {
+        if (
+          schedule.scheduleDate >= startDateFormatted &&
+          schedule.scheduleDate <= endDateFormatted
+        ) {
+          return schedule;
+        }
+        return null;
+      })
+    );
+  }, [startDate, endDate, absences]);
 
   return (
     <div>
@@ -180,6 +210,7 @@ export default function PageAbsensi() {
                   type='date'
                   defaultValue={new Date().toISOString().slice(0, 10)}
                   className='input input-bordered'
+                  onChange={(e) => setStartDate(e.target.value)}
                 />
               </div>
             </div>
@@ -192,6 +223,7 @@ export default function PageAbsensi() {
                   type='date'
                   defaultValue={new Date().toISOString().slice(0, 10)}
                   className='input input-bordered'
+                  onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
             </div>
@@ -209,15 +241,14 @@ export default function PageAbsensi() {
             type='text'
             placeholder='Cari...'
             className='w-full pl-10 input input-bordered'
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearch}
           />
         </div>
         <p className='text-xs text-slate-500'>{absences.length} Absen</p>
         <div>
           <DataTable
             columns={columns}
-            data={filteredData}
+            data={filteredAbsences}
             customStyles={customStyles}
           />
         </div>

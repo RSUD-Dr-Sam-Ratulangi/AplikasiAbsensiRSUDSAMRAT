@@ -1,12 +1,49 @@
-import { StyleSheet, Text, View, SafeAreaView, Image } from 'react-native'
-import React from 'react'
-import { Ilustration, Logo } from '../../assets/images'
+import { StyleSheet, Text, View, SafeAreaView, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import { Ilustration, Logo } from '../../assets/images';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SplashScreen = ({navigation}: any) => {
+    const getAccessToken = async () => {
+        try {
+            const token = await AsyncStorage.getItem('access_token');
+            checkToken(token);
+            console.log('get token:', token)
+        } catch (error) {
+            console.log('Gagal mengambil token: ', error)
+        }
+    }
 
-    setTimeout(() => {
-        navigation.replace('Login')
-    }, 3000);
+    const checkToken = async (token) => {
+        axios.get('http://rsudsamrat.site:3001/api/ping',
+        {headers:{
+            'Authorization' : `Bearer ${token}`
+        }})
+        .then(function (response){
+            const responseJSON = {response};
+            const responseMSG = responseJSON.response.data;
+
+            if(responseMSG === 'pong'){
+                navigation.replace('Tabs');
+            } else {
+                setTimeout(() => {
+                    navigation.replace('Login')
+                }, 3000);
+            }
+        })
+        .catch(function (error){
+            console.log("error ",error.status);
+            setTimeout(() => {
+                navigation.replace('Login')
+            }, 3000);
+        })
+    }
+    
+    useEffect(() => {
+        getAccessToken();
+    }, [])
+
     return (
         <SafeAreaView style={styles.page}>
             <View style={styles.screenContainer}>

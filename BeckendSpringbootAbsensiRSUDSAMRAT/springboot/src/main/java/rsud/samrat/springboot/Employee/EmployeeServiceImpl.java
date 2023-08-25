@@ -179,8 +179,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 
 @Override
-public CreateEmployeeResponseDTO getEmployeeByNIK(String nik) {
-    EmployeeModel employee = employeeRepository.findByNik(nik);
+public CreateEmployeeResponseDTO getLatestEmployeeByNIK(String nik) {
+    EmployeeModel employee = employeeRepository.findLatestEmployeeByNik(nik);
     if (employee != null) {
         CreateEmployeeResponseDTO responseDTO = new CreateEmployeeResponseDTO();
         responseDTO.setEmployeeId(employee.getEmployee_id());
@@ -191,7 +191,6 @@ public CreateEmployeeResponseDTO getEmployeeByNIK(String nik) {
         PlacementModel placement = employee.getPlacement();
         PlacementCreateResponseDTO placementDTO = new PlacementCreateResponseDTO();
         placementDTO.setPlacement_id(placement.getPlacement_id());
-        // Set other placement properties
 
         responseDTO.setPlacement(placementDTO);
 
@@ -199,6 +198,7 @@ public CreateEmployeeResponseDTO getEmployeeByNIK(String nik) {
     }
     return null;
 }
+
 
 
 }

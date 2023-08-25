@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, SafeAreaView, Image, Dimensions } from 'react-n
 import React, { useEffect, useState } from 'react'
 import { Calendar } from 'react-native-calendars'
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const History = ({navigation}: any) => {
     const screenWidht = Dimensions.get('window').width;
@@ -10,15 +11,18 @@ const History = ({navigation}: any) => {
     const [location, setLocation] = useState('');
     const [time, setTime] = useState('');
     const [date, setDate] = useState('')
-    const [employeeId, setEmployeeId] = useState(2);
     const [data, setData] = useState([]);
     const [getMarkedDates, setGetMarkedDates] = useState();
     const [selectedDateData, setSelectedDateData] = useState(null);
-
-
-    const url = `http://rsudsamrat.site:9999/api/v1/dev/attendances/filter?employeeId=${employeeId}`;
-
-    useEffect(() => {
+    
+    const getEmployeeId = async () => {
+        const employeeId = await AsyncStorage.getItem('employeeId');
+        getData(employeeId);
+        console.log(employeeId);
+    }
+    
+    const getData = (employeeId) => {
+        const url = `http://rsudsamrat.site:9999/api/v1/dev/attendances/filter?employeeId=${employeeId}`;
         axios.get(url)
         .then(function (response) {
             setData(response.data);
@@ -26,6 +30,10 @@ const History = ({navigation}: any) => {
         .catch(function (error) {
             console.log('error:',error);
         });
+    }
+
+    useEffect(() => {
+        getEmployeeId();
     }, [])
 
     useEffect(() => {

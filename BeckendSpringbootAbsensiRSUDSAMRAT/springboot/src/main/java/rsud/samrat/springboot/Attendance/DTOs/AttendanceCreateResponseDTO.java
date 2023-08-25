@@ -1,5 +1,6 @@
 package rsud.samrat.springboot.Attendance.DTOs;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,9 +32,11 @@ public class AttendanceCreateResponseDTO {
     private Double locationLatOut;
     private Double locationLongOut;
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] selfieCheckIn;
 
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] selfieCheckOut;
     private LocationsCreateResponseDTO location;
     private AttendanceState attendanceState;

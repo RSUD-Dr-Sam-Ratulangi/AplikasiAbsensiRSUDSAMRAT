@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { HiSearch, HiOutlineTrash, HiOutlinePlus } from 'react-icons/hi';
 import DataTable from 'react-data-table-component';
-import {api} from '../../config/axios';
+import { api } from '../../config/axios';
+import { useParams } from 'react-router-dom';
 
 export default function PageEmployeeSchedule() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchResults2, setSearchResults2] = useState([]);
-
   const [schedule, setSchedule] = useState([]);
   const [haveSchedule, setHaveSchedule] = useState([]);
+  const [scheduleData, setScheduleData] = useState([]);
+  const { scheduleId } = useParams();
 
   const columns1 = [
     {
@@ -66,7 +68,7 @@ export default function PageEmployeeSchedule() {
         <button
           type='button'
           className='text-white bg-red-600 btn btn-sm hover:bg-red-700'
-          onClick={() => handleDelete(row.id)}>
+          onClick={() => handleDelete(row.employeeId)}>
           <HiOutlineTrash />
         </button>
       )
@@ -74,19 +76,48 @@ export default function PageEmployeeSchedule() {
   ];
 
   const handleAdd = (id) => {
-    // add this row to haveSchedule state
-    setHaveSchedule([
-      ...haveSchedule,
-      searchResults.find((item) => item.employeeId === id)
-    ]);
-    // remove this row from schedule state
-    setSchedule(searchResults.filter((item) => item.employeeId !== id));
+    api
+      .post(`/api/v1/dev/employees/${id}/schedule`, {
+        employeeId: id,
+        scheduleId: scheduleId
+      })
+      .then((res) => {
+        console.log(res.data);
+
+        // add this row to haveSchedule state
+        setHaveSchedule([
+          ...haveSchedule,
+          searchResults.find((item) => item.employeeId === id)
+        ]);
+        // remove this row from schedule state
+        setSchedule(searchResults.filter((item) => item.employeeId !== id));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 
     console.log('haveSchedule: ', haveSchedule);
   };
 
   const handleDelete = (id) => {
-    console.log(`Delete button clicked for row with id: ${id}`);
+    api
+      .delete(`/api/v1/dev/schedule/${scheduleId}/removeEmployee/${id}`)
+      .then((res) => {
+        console.log(res.data);
+
+        // add this row to schedule state
+        setSchedule([
+          ...schedule,
+          searchResults2.find((item) => item.employeeId === id)
+        ]);
+        // remove this row from haveSchedule state
+        setHaveSchedule(
+          searchResults2.filter((item) => item.employeeId !== id)
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const customStyles = {
@@ -98,7 +129,6 @@ export default function PageEmployeeSchedule() {
   };
 
   useEffect(() => {
-    // Fetch data from API
     api
       .get('/api/v1/dev/employees')
       .then((res) => {
@@ -110,6 +140,32 @@ export default function PageEmployeeSchedule() {
         console.log(err);
       });
   }, []);
+
+  useEffect(() => {
+    api
+      .get('/api/v1/dev/schedule/' + scheduleId)
+      .then((res) => {
+        setScheduleData(res.data);
+        setHaveSchedule(res.data?.employees);
+        console.log(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [scheduleId]);
+
+  useEffect(() => {
+    if (!scheduleData.employees) return;
+    const filteredSchedule = schedule.filter(
+      (item) =>
+        !scheduleData.employees.some(
+          (item2) => item.employeeId === item2.employeeId
+        )
+    );
+    setSchedule(filteredSchedule);
+    console.log('filteredSchedule: ', filteredSchedule);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [haveSchedule]);
 
   const handleSearch = (value) => {
     setSearchTerm(value);
@@ -145,19 +201,21 @@ export default function PageEmployeeSchedule() {
           <div className='w-full flex justify-center items-center'>
             <div className='flex flex-col justify-start items-start w-full'>
               <h2 className='font-bold'>Date</h2>
-              <span>Senin, 3 Agustus 2023</span>
+              <span>{scheduleData.scheduleDate}</span>
             </div>
             <div className='flex flex-col justify-start items-start w-full'>
               <h2 className='font-bold'>Sif</h2>
-              <span>Pagi</span>
+              <span>{scheduleData.shift.name}</span>
             </div>
             <div className='flex flex-col justify-start items-start w-full'>
               <h2 className='font-bold'>Waktu</h2>
-              <span>08:00 - 16:00</span>
+              <span>
+                {scheduleData.shift.start_time} - {scheduleData.shift.end_time}
+              </span>
             </div>
             <div className='flex flex-col justify-start items-start w-full'>
               <h2 className='font-bold'>Location</h2>
-              <span>Hospital</span>
+              <span>{scheduleData.location ?? 'Tidak Diketahui'}</span>
             </div>
           </div>
           {/* Search Bar */}

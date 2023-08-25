@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   HiSearch,
   HiChevronDown,
@@ -7,8 +7,6 @@ import {
   HiChevronLeft,
 } from "react-icons/hi";
 import DataTable from "react-data-table-component";
-// import api from '../../config/axios';
-
 import api from "../../config/axios";
 import { useNavigate } from "react-router-dom";
 
@@ -114,14 +112,15 @@ export default function ViewAllSchedule() {
 
   return (
     <div>
-      <div className="flex items-end justify-between">
-        <button
-          className="btn bg-transparent border-none"
-          onClick={() => navigate(`/shift`)}
-        >
-          <HiChevronLeft />
-          Schedule
-        </button>
+      <button
+        className="btn bg-transparent border-none"
+        onClick={() => navigate(`/shift`)}
+      >
+        <HiChevronLeft />
+        Schedule
+      </button>
+      <div className="flex items-center justify-between">
+        <h1 className=" text-2xl">See All Employee Schedule</h1>
         <button
           type="button"
           className=" gap-2 px-14 py-3 font-semibold text-white rounded-md bg-primary-2"
@@ -201,13 +200,14 @@ export default function ViewAllSchedule() {
           </div>
         </div>
 
-        <p className="text-xs text-slate-500">{schedule.length} sif</p>
+        <p className="text-xs text-slate-500">
+          {filteredScheduleData.length} schedule
+        </p>
         <div className=" overflow-auto max-h-[60vh]">
           <DataTable
             columns={columns}
             data={filteredScheduleData}
             customStyles={customStyles}
-            onRowClicked={(row) => navigate(`/shift/${row.scheduleId}`)}
           />
         </div>
       </div>

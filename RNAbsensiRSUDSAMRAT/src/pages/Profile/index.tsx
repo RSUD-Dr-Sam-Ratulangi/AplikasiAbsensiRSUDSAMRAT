@@ -1,12 +1,12 @@
 import { StyleSheet, Text, View, Button, Alert, Image, SafeAreaView, ScrollView } from 'react-native'
 import React, { useState } from 'react'
-import { ProfilePicture } from '../../assets/images'
+import { ProfilePicture, Ilustration7 } from '../../assets/images'
 
 const Profile = ({navigation}: any) => {
     const [picture, setPicture] = useState(ProfilePicture);
     const [name, setName] = useState('Leonardo Polandos S.Kom');
     const [id, setId] = useState('19740516 199705 1 001');
-    const [division, setDivision] = useState('Unit Pengelolah Teknologi & Informasi Rumah Sakit Front-End Developer');
+    const [division, setDivision] = useState('UPTIRS');
     const [agency, setAgency] = useState('Pemerintah Provinsi Sulawesi Utara');
     const [office, setOffice] = useState('RSUD DR Sam Ratulangi Tondano');
     const [eselon, setEselon] = useState('III - a');
@@ -16,41 +16,37 @@ const Profile = ({navigation}: any) => {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
-                <View style={styles.header}>
-                    <Image
-                        source={picture}
-                        style={{width: 86, height: 86}}
-                    />
-                    <Text style={styles.name}>{name}</Text>
-                    <Text style={styles.id}>{id}</Text>
-                    <Text style={styles.division}>{division}</Text>
+                <View style={styles.headerBg}>
+                    <Image source={Ilustration7} style={{height: '100%', width: '100%'}}/>
+                    <Text style={styles.pageTitle}>Profile</Text>
                 </View>
-                <View style={styles.descContainer}>
-                    <View>
-                        <Text style={styles.title}>Data Pegawai</Text>
-                        <View style={styles.descWrapper}>
+                <View style={styles.contentContainer}>
+                    <Text style={{fontSize: 20, color: '#86869E', fontWeight: '500', alignSelf: 'flex-start'}}>Data Pegawai</Text>
+                    <View style={styles.secContainer}>
+                        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 15}}>
+                            <Image source={ProfilePicture} style={styles.profilePicture} />
+                            <View>
+                                <Text style={{fontSize: 16, fontWeight: 'bold', color: '#424247'}}>{name}</Text>
+                                <Text style={{fontSize: 14, color: '#424247'}}>{id}</Text>
+                            </View>
+                        </View>
+                        <View>
                             <Text style={styles.text}>Instansi</Text>
-                            <Text style={styles.text}>{agency}</Text>
+                            <Text style={styles.text2}>{agency}</Text>
                         </View>
-                        <View style={{...styles.descWrapper, marginTop: 22}}>
+                        <View style={{marginTop: 20}}>
                             <Text style={styles.text}>Kantor</Text>
-                            <Text style={styles.text}>{office}</Text>
+                            <Text style={styles.text2}>{office}</Text>
                         </View>
-                        <View style={{...styles.descWrapper, marginTop: 22}}>
-                            <Text style={styles.text}>Eselon</Text>
-                            <Text style={styles.text}>{eselon}</Text>
-                        </View>
-                        <View style={{...styles.descWrapper, marginTop: 22}}>
-                            <Text style={styles.text}>Pangkat/Gol</Text>
-                            <Text style={styles.text}>{rankAndClas}</Text>
+                        <View style={{marginTop: 20}}>
+                            <Text style={styles.text}>Bidang</Text>
+                            <Text style={styles.text2}>{division}</Text>
                         </View>
                     </View>
-                    <View style={{marginTop: 44, borderColor: '#C4C4C4', borderTopWidth: 2, paddingTop: 26}}>
-                        <Text style={styles.title}>Pengaturan</Text>
-                        <View style={{...styles.descWrapper, paddingBottom: 170}}>
-                            <Text style={styles.text}>App Version</Text>
-                            <Text style={styles.text}>{appVersion}</Text>
-                        </View>
+                    <Text style={{fontSize: 20, color: '#86869E', fontWeight: '500', alignSelf: 'flex-start'}}>Pengaturan</Text>
+                    <View style={styles.secContainer}>
+                        <Text style={styles.text}>App Version</Text>
+                        <Text style={styles.text2}>{appVersion}</Text>
                     </View>
                 </View>
             </ScrollView>
@@ -65,59 +61,53 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#ffffff'
     },
-    header:{
-        backgroundColor: '#01A7A3',
+    headerBg:{
+        height: 120,
+        flexDirection: 'row'
+    },
+    pageTitle:{
+        fontSize: 25,
+        fontWeight: 'bold',
+        color: '#fff',
+        position: 'absolute',
+        alignSelf: 'center',
+        left: 27
+    },
+    contentContainer:{
+        paddingTop: 46,
+        paddingHorizontal: 25,
+        alignItems: 'center',
+    },
+    profilePicture:{
+        height: 66,
+        width: 66,
+        borderRadius: 33,
+        borderWidth: 2,
+        borderColor: '#01A7A3',
+        marginRight: 13
+    },
+    secContainer:{
         width: '100%',
         height: 'auto',
-        alignItems: 'center',
-        paddingTop: 56,
-        paddingBottom: 5,
-        borderBottomLeftRadius: 70,
-        borderBottomRightRadius: 70,
+        padding: 14,
+        backgroundColor: '#ffffff',
         shadowColor: '#000000',
-        shadowOffset: {width:5, height:5},
-        shadowOpacity: 1,
+        shadowOffset: {width:0, height:2},
+        shadowOpacity: 0.2,
         shadowRadius: 4,
-        elevation: 10,
-    },
-    name:{
-        fontSize: 15,
-        fontWeight: '500',
-        color: '#4D4D4D',
-        marginTop: 5
-    },
-    id:{
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#F5F5F5',
-        marginTop: 13
-    },
-    division:{
-        fontSize: 11,
-        fontWeight: '500',
-        color: '#4D4D4D',
-        textAlign: 'center',
-        width: 166,
-    },
-    descContainer:{
-        flex: 1,
-        paddingTop: 83,
-        paddingLeft: 11,
-        paddingRight: 13
-    },
-    title:{
-        fontSize: 15,
-        color: '#0F0F0F',
-        marginBottom: 15
-    },
-    descWrapper:{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingLeft: 32,
+        elevation: 5,
+        borderRadius: 12,
+        marginBottom: 42,
+        marginTop: 12
     },
     text:{
-        fontSize: 13,
-        color: '#4D4D4D',
-        opacity: 0.9
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#9A9A9A',
+        marginBottom: 6
     },
+    text2:{
+        fontSize: 16,
+        color: '#424247'
+    }
 })

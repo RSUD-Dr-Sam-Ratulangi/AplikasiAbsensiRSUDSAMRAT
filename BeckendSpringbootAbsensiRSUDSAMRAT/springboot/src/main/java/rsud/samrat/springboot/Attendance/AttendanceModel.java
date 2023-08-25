@@ -44,9 +44,11 @@ public class AttendanceModel {
     private Double Location_lat_Out;
     private Double Location_Long_Out;
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] selfieCheckIn;
 
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] selfieCheckOut;
 
     @Enumerated(EnumType.STRING)

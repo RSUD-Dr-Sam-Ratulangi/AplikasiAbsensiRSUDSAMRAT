@@ -167,7 +167,7 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-  background-image: url("./img/magnifying-glass.png"); /* Replace 'path/to/your/image.png' with the actual image path */
+  background-image: url('./img/magnifying-glass.png'); /* Replace 'path/to/your/image.png' with the actual image path */
   background-repeat: no-repeat;
   background-position: 1rem, left;
   padding-left: 3rem;
@@ -280,7 +280,7 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-  background-image: url("./img/magnifying-glass.png"); /* Replace 'path/to/your/image.png' with the actual image path */
+  background-image: url('./img/magnifying-glass.png'); /* Replace 'path/to/your/image.png' with the actual image path */
   background-repeat: no-repeat;
   background-position: 1rem, left;
   padding-left: 3rem;
@@ -395,7 +395,7 @@ body.active-modal {
   min-height: 25rem;
   min-width: 25rem;
   background-color: #fafafa;
-  background-image: url("./img/Modal-Background.png");
+  background-image: url('./img/Modal-Background.png');
   background-size: cover;
   padding-bottom: 2.5rem;
 }

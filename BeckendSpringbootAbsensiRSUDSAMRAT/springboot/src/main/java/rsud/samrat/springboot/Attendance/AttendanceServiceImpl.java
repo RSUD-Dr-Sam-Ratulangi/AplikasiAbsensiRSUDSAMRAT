@@ -16,7 +16,9 @@ import rsud.samrat.springboot.Schedule.ScheduleModel;
 import rsud.samrat.springboot.Schedule.ScheduleRepository;
 import rsud.samrat.springboot.Shift.DTOs.ShiftResponseDTO;
 import rsud.samrat.springboot.Shift.ShiftModel;
+import rsud.samrat.springboot.Utility.ImageCompressionUtil;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -100,11 +102,28 @@ public class AttendanceServiceImpl implements AttendanceService {
         attendance.setLocation_long_In(requestDTO.getLocationLongIn());
         attendance.setLocation_lat_Out(null);
         attendance.setLocation_Long_Out(null);
+
         if (selfieCheckInImage != null && !selfieCheckInImage.isEmpty()) {
             try {
-                attendance.setSelfieCheckIn(selfieCheckInImage.getBytes());
+                int targetWidth = 800;
+                int targetHeight = 600;
+                float compressionQuality = 0.8f;
+
+                // Use the utility class for image compression
+                byte[] compressedImage = ImageCompressionUtil.compressImage(selfieCheckInImage, targetWidth, targetHeight, compressionQuality);
+
+                // Save the compressed image to a temporary file for inspection
+               // String tempFilePath = "compressed_image.jpg"; // Specify the temporary file path
+               // try (FileOutputStream fos = new FileOutputStream(tempFilePath)) {
+               //     fos.write(compressedImage);
+               // } catch (IOException e) {
+                //   throw new RuntimeException("Failed to save compressed image to a temporary file.", e);
+               // }
+
+                // Set the compressed image data to the attendance model
+                attendance.setSelfieCheckIn(compressedImage);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to read selfieCheckInImage data.", e);
+                throw new RuntimeException("Failed to compress and store selfieCheckInImage data.", e);
             }
         }
         attendance.setSelfieCheckOut(null);
@@ -146,6 +165,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         return responseDTO;
     }
+
 
 
 
