@@ -14,7 +14,7 @@ register = async (req, res) => {
 
     const newUser = new Admin({ nik, password: passwordHash });
     savedUser = await newUser.save();
-    res.status(201).json(savedUser);
+    res.status(201).json({ data: savedUser, message: 'User admin created' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -19,7 +19,7 @@ const Notification = () => {
   const getNotif = async () => {
     try {
       const response = await axios.get(
-        'http://192.168.1.8:3001/api/notification',
+        'http://192.168.1.2:3001/api/notification',
       );
       console.log(response.data.data);
       setGetNotification(response.data.data);

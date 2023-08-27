@@ -95,6 +95,8 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
     const data = {
       name: name,
       role: jabatan,
+      password: password,
+      nik: nik,
       placementId: akunData?.placement_id ?? 1,
     };
     const dataEdit = {
@@ -235,7 +237,7 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
                       postAkunData();
                       onClose();
                     }}
-                    disabled={!allFieldsFilled()}
+                    // disabled={!allFieldsFilled()}
                     className="text-white btn bg-primary-2 hover:bg-primary-3 w-full"
                   >
                     {type === "create" ? "Buat" : "Edit"}

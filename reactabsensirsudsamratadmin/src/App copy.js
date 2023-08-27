@@ -25,6 +25,7 @@ import PageShift from "./pages/PageShift/PageShift";
 import PageEmployeeSchedule from "./pages/PageShift/PageEmployeeSchedule";
 import PageExampleClient from "./pages/PageExample/PageExample-Client";
 import PageExample from "./pages/PageExample/PageExample";
+import ViewAllSchedule from "./pages/PageShift/ViewAllSchedule";
 import PrivateRoute from "./config/PrivateRoute";
 import Cookies from "js-cookie";
 import { useSelector } from "react-redux";
@@ -176,6 +177,10 @@ export default function App() {
                     <Route
                       path="/example-client"
                       element={<PrivateRoute element={<PageExampleClient />} />}
+                    />
+                    <Route
+                      path="/shift/allschedule"
+                      element={<PrivateRoute element={<ViewAllSchedule />} />}
                     />
                   </>
                 )}

@@ -7,23 +7,82 @@ import {
   HiChevronLeft,
 } from "react-icons/hi";
 import DataTable from "react-data-table-component";
-import api from "../../config/axios";
+import { api } from "../../config/axios";
 import { useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function ViewAllSchedule() {
   const [reloadApi, setReloadApi] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [schedulefl, setSchedulefl] = useState("");
+
+  const [filteredSchedule, setFilteredSchedule] = useState([]);
   // const [absences, setAbsences] = useState([]);
   const [scheduleTime, setscheduleTime] = useState("Shift");
   const [isOpen, setIsOpen] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   const [schedule, setSchedule] = useState([]);
 
-  const filteredScheduleData = schedule.filter((sch) =>
-    sch.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // const filteredScheduleData = schedule.filter((sch) =>
+  //   sch.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   const navigate = useNavigate();
+
+  const generatePDF = () => {
+    let data = filteredSchedule.map((employee) => {
+      return {
+        name: employee?.name,
+        bidang: employee?.role,
+        password: employee?.password,
+        nik: employee?.nik,
+      };
+    });
+    const doc = new jsPDF();
+    doc.text("employee schedule", 20, 10);
+    doc.autoTable({
+      theme: "grid",
+      columns: pdfcolumns.map((col) => ({ ...col, dataKey: col.field })),
+      body: data,
+    });
+    doc.save("table.pdf");
+    console.log(data);
+  };
+
+  const studentData = [
+    {
+      id: 1,
+      name: "Neeraj",
+      email: "neeraj@gmail.com",
+      year: 2015,
+      fee: 167000,
+    },
+    {
+      id: 2,
+      name: "Vikas",
+      email: "vikas@gmail.com",
+      year: 2013,
+      fee: 785462,
+    },
+
+    {
+      id: 3,
+      name: "Rahul",
+      email: "rahul@gmail.com",
+      year: 2020,
+      fee: 784596,
+    },
+  ];
+
+  const pdfcolumns = [
+    { title: "Name", field: "name" },
+    { title: "Bidang", field: "bidang" },
+    { title: "Password", field: "password" },
+    { title: "NIK", field: "nik", type: "numeric" },
+  ];
 
   const handleOptionClick = (option) => {
     setscheduleTime(option);
@@ -72,14 +131,6 @@ export default function ViewAllSchedule() {
     },
   ];
 
-  const handleEdit = (id) => {
-    console.log(`Edit button clicked for row with id: ${id}`);
-  };
-
-  const handleDelete = (id) => {
-    console.log(`Delete button clicked for row with id: ${id}`);
-  };
-
   const customStyles = {
     headCells: {
       style: {
@@ -102,13 +153,90 @@ export default function ViewAllSchedule() {
             allEmployees.push(emp);
           }
         }
-        setSchedule(allEmployees);
-        console.log(allEmployees);
+        setFilteredSchedule(allEmployees);
+        setSchedule(res.data);
+        console.log(res.data);
+
+        // console.log(allEmployees);
       })
       .catch((err) => {
         console.log(err);
       });
   }, [reloadApi]);
+
+  useEffect(() => {
+    if (searchTerm === "") {
+      setFilteredSchedule(
+        schedule
+          .filter((schedule) => schedule.employees.length !== 0)
+          .map((schedule) => schedule.employees)
+          .flat()
+      );
+      return;
+    }
+    const results = schedule
+      .map((schedule) => schedule.employees)
+      .flat()
+      .filter((employee) =>
+        employee.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    setFilteredSchedule(results);
+  }, [searchTerm, schedule]);
+
+  useEffect(() => {
+    if (startDate === null || endDate === null) {
+      return;
+    }
+
+    const startDateFormatted = startDate.split("-").join("-");
+    const endDateFormatted = endDate.split("-").join("-");
+
+    console.log(startDateFormatted, endDateFormatted);
+
+    if (startDateFormatted > endDateFormatted) {
+      alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir");
+      return;
+    }
+
+    setFilteredSchedule(
+      schedule
+        .filter(
+          (schedule) =>
+            schedule.scheduleDate >= startDateFormatted &&
+            schedule.scheduleDate <= endDateFormatted &&
+            schedule.employees.length !== 0
+        )
+        .map((schedule) => schedule.employees)
+        .flat()
+    );
+  }, [startDate, endDate, schedule]);
+
+  useEffect(() => {
+    if (scheduleTime === "Shift") {
+      setFilteredSchedule(
+        schedule.map((schedule) => schedule.employees).flat()
+      );
+      return;
+    }
+
+    const results = schedule.filter((schedule) => {
+      const startTime = schedule.shift.start_time;
+      let shiftLabel = "";
+
+      if (startTime === "08:00:00") {
+        shiftLabel = "Pagi";
+      } else if (startTime === "14:00:00") {
+        shiftLabel = "Sore";
+      } else if (startTime === "16:00:00") {
+        shiftLabel = "Malam";
+      }
+      if (shiftLabel === scheduleTime) {
+        return schedule;
+      }
+    });
+
+    setFilteredSchedule(results.map((schedule) => schedule.employees).flat());
+  }, [schedule, scheduleTime]);
 
   return (
     <div>
@@ -123,6 +251,7 @@ export default function ViewAllSchedule() {
         <h1 className=" text-2xl">See All Employee Schedule</h1>
         <button
           type="button"
+          onClick={generatePDF}
           className=" gap-2 px-14 py-3 font-semibold text-white rounded-md bg-primary-2"
         >
           Print PDF
@@ -147,14 +276,14 @@ export default function ViewAllSchedule() {
             <div className="flex justify-center items-center gap-2">
               <input
                 type="date"
-                defaultValue={new Date().toISOString().slice(0, 10)}
                 className="input input-bordered"
+                onChange={(e) => setStartDate(e.target.value)}
               />
-              <p>-</p>
+              <p>Sampai</p>
               <input
                 type="date"
-                defaultValue={new Date().toISOString().slice(0, 10)}
                 className="input input-bordered"
+                onChange={(e) => setEndDate(e.target.value)}
               />
               <div className="relative inline-block text-left w-48">
                 <button
@@ -178,13 +307,13 @@ export default function ViewAllSchedule() {
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
                     onClick={() => handleOptionClick("Pagi")}
                   >
-                    Pagi
+                    Pagi/Management
                   </li>
                   <li
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
-                    onClick={() => handleOptionClick("Siang")}
+                    onClick={() => handleOptionClick("Sore")}
                   >
-                    Siang
+                    Sore
                   </li>
                   <li
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
@@ -201,12 +330,12 @@ export default function ViewAllSchedule() {
         </div>
 
         <p className="text-xs text-slate-500">
-          {filteredScheduleData.length} schedule
+          {filteredSchedule.length} pegawai
         </p>
-        <div className=" overflow-auto max-h-[60vh]">
+        <div className=" overflow-auto max-h-[60vh]" id="content">
           <DataTable
             columns={columns}
-            data={filteredScheduleData}
+            data={filteredSchedule}
             customStyles={customStyles}
           />
         </div>

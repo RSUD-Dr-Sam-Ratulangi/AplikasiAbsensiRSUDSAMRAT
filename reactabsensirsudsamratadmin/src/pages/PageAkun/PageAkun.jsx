@@ -20,7 +20,7 @@ export default function PageAkun() {
   const modalAkun = useRef(null);
   const modalDelete = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [deleteId, setDeleteId] = useState(null);
+  const [deleteId, setDeleteId] = useState(0);
 
   const deleteSuccess = () =>
     toast("Akun berhasil di hapus", {
@@ -43,7 +43,7 @@ export default function PageAkun() {
     });
 
   const filteredAkunData = akunData.filter((akun) =>
-    akun.name.toLowerCase().includes(searchTerm.toLowerCase())
+    akun.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const columns = [
@@ -84,7 +84,10 @@ export default function PageAkun() {
           <button
             type="button"
             className="text-white bg-red-600 btn btn-sm hover:bg-red-700"
-            onClick={() => handleDeleteModal(row.id)}
+            onClick={() => {
+              setDeleteId(row.employeeId);
+              modalDelete.current.open();
+            }}
           >
             <HiOutlineTrash />
           </button>
@@ -117,14 +120,9 @@ export default function PageAkun() {
     modalAkun.current.open();
   };
 
-  const handleDeleteModal = (id) => {
-    setDeleteId(id);
-    modalDelete.current.open();
-  };
-
-  const handleDelete = (deleteId) => {
+  const handleDelete = (id) => {
     api
-      .delete(`/api/v1/dev/employees/${deleteId}`)
+      .delete(`/api/v1/dev/employees/${id}`)
       .then((res) => {
         console.log(res.data);
         deleteSuccess();
@@ -166,7 +164,7 @@ export default function PageAkun() {
             <button
               className=" btn bg-primary-2 w-28"
               onClick={() => {
-                handleDelete();
+                handleDelete(deleteId);
               }}
             >
               Ya
@@ -175,7 +173,7 @@ export default function PageAkun() {
               className="btn bg-red-500 w-28"
               onClick={() => {
                 modalDelete.current.close();
-                setDeleteId(null);
+                // setDeleteId(null);
               }}
             >
               Tidak
