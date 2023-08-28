@@ -11,6 +11,7 @@ export default function PageAbsensi() {
   const [endDate, setEndDate] = useState(null);
   const [absences, setAbsences] = useState([]);
   const [filteredAbsences, setFilteredAbsences] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
 
   const handleSearch = (e) => {
@@ -82,90 +83,92 @@ export default function PageAbsensi() {
   useEffect(() => {
     const fetchAbsences = async () => {
       try {
-        const response = await apiCheckToken.get('/ping');
-        console.log(response.data);
-        if (response.data) {
-          try {
-            const response = await api.get(
-              '/api/v1/dev/attendances/all-with-schedule'
-            );
-            const data = response.data;
+        const response = await api.get(
+          '/api/v1/dev/attendances/all-with-schedule'
+        );
+        const data = response.data;
 
-            const ExtractData = data.map((attendance) => {
-              const shiftStartTime = attendance.shift.start_time;
-              const shiftEndTime = attendance.shift.end_time;
+        const ExtractData = data.map((attendance) => {
+          const shiftStartTime = attendance.shift.start_time;
+          const shiftEndTime = attendance.shift.end_time;
 
-              const clockIn = attendance.attendances[0]?.clockIn
-                ? new Date(attendance.attendances[0].clockIn)
-                : null;
-              const clockOut = attendance.attendances[0]?.clockOut
-                ? new Date(attendance.attendances[0].clockOut)
-                : null;
+          const clockIn = attendance.attendances[0]?.clockIn
+            ? new Date(attendance.attendances[0].clockIn)
+            : null;
+          const clockOut = attendance.attendances[0]?.clockOut
+            ? new Date(attendance.attendances[0].clockOut)
+            : null;
 
-              const formatWaktu = (waktu) => {
-                const options = {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                  hour12: false,
-                };
-                return waktu.toLocaleTimeString('en-US', options);
-              };
-              const clockInTime = clockIn ? formatWaktu(clockIn) : null;
-              const clockOutTime = clockOut ? formatWaktu(clockOut) : null;
+          const formatWaktu = (waktu) => {
+            const options = {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false,
+            };
+            return waktu.toLocaleTimeString('en-US', options);
+          };
+          const clockInTime = clockIn ? formatWaktu(clockIn) : null;
+          const clockOutTime = clockOut ? formatWaktu(clockOut) : null;
 
-              let statusPenilaian = 'red'; // Default: Tidak ada data clock in atau clock out
+          let statusPenilaian = 'red'; // Default: Tidak ada data clock in atau clock out
 
-              if (clockInTime && clockOutTime) {
-                if (
-                  clockInTime <= shiftStartTime &&
-                  clockOutTime >= shiftEndTime
-                ) {
-                  statusPenilaian = 'green'; // Clock in sebelum start_time dan clock out setelah end_time
-                } else if (clockInTime > shiftStartTime) {
-                  statusPenilaian = 'yellow'; // Clock in setelah start_time
-                }
-              } else if (clockInTime) {
-                if (clockInTime > shiftStartTime) {
-                  statusPenilaian = 'yellow'; // Clock in setelah start_time
-                }
-              }
-
-              const employeeNamesString = attendance.attendances
-                .map((attendance) => attendance.employee.name)
-                .join(', ')
-                .replace(
-                  /\w\S*/g,
-                  (txt) =>
-                    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-                );
-
-              return {
-                clockInTime: clockInTime,
-                clockOutTime: clockOutTime,
-                shiftStartTime: shiftStartTime,
-                shiftEndTime: shiftEndTime,
-                presence: statusPenilaian,
-                id: attendance.scheduleId,
-                category: attendance.attendances.map(
-                  (attendance) => attendance.attendanceType
-                ),
-                name: employeeNamesString,
-                time: attendance.scheduleDate,
-                shift: attendance.shift.name,
-              };
-            });
-            console.log(ExtractData);
-
-            setAbsences(ExtractData);
-          } catch (error) {
-            console.log(error);
+          if (clockInTime && clockOutTime) {
+            if (
+              clockInTime <= shiftStartTime &&
+              clockOutTime >= shiftEndTime
+            ) {
+              statusPenilaian = 'green'; // Clock in sebelum start_time dan clock out setelah end_time
+            } else if (clockInTime > shiftStartTime) {
+              statusPenilaian = 'yellow'; // Clock in setelah start_time
+            }
+          } else if (clockInTime) {
+            if (clockInTime > shiftStartTime) {
+              statusPenilaian = 'yellow'; // Clock in setelah start_time
+            }
           }
-        }
+
+          const employeeNamesString = attendance.attendances
+            .map((attendance) => attendance.employee.name)
+            .join(', ')
+            .replace(
+              /\w\S*/g,
+              (txt) =>
+                txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+            );
+
+          return {
+            clockInTime: clockInTime,
+            clockOutTime: clockOutTime,
+            shiftStartTime: shiftStartTime,
+            shiftEndTime: shiftEndTime,
+            presence: statusPenilaian,
+            id: attendance.scheduleId,
+            category: attendance.attendances.map(
+              (attendance) => attendance.attendanceType
+            ),
+            name: employeeNamesString,
+            time: attendance.scheduleDate,
+            shift: attendance.shift.name,
+          };
+        });
+        console.log(ExtractData);
+        console.log("dataReal", response.data);
+        setIsLoading(false);
+        setAbsences(ExtractData);
       } catch (error) {
+        setIsLoading(false)
         console.log(error);
-        dispatch(expiredToken());
       }
+      // try {
+      //   const response = await apiCheckToken.get('/ping');
+      //   console.log(response.data);
+      //   if (response.data) {
+      //   }
+      // } catch (error) {
+      //   console.log(error);
+      //   dispatch(expiredToken());
+      // }
     };
 
     fetchAbsences();
@@ -199,6 +202,12 @@ export default function PageAbsensi() {
 
   return (
     <div>
+    {isLoading ? (
+      <div className='flex justify-center items-center h-56'>
+              <span className="loading loading-dots loading-lg"></span>
+        </div>
+    ) : (
+      <div>
       <h1 className="text-xl font-medium">Absensi</h1>
       <div className="flex flex-col gap-3">
         <div className="flex justify-end items-end gap-3">
@@ -255,6 +264,8 @@ export default function PageAbsensi() {
           />
         </div>
       </div>
+    </div>
+    )}
     </div>
   );
 }

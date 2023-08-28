@@ -20,15 +20,17 @@ export default function PagePengumuman() {
   const modalPengumumanRef = useRef(null);
 
   const getData = async () => {
-    const result = await axios.get('http://localhost:3001/api/notification');
+    const result = await axios.get('http://rsudsamrat.site:3001/api/notification');
+    console.log(result.data)
     setData(result.data.data);
     setFilteredData(result.data.data);
   };
 
   const handleDelete = async (id) => {
     await axios
-      .delete(`http://localhost:3001/api/notification/${id}`)
+      .delete(`http://rsudsamrat.site:3001/api/notification/${id}`)
       .then((res) => {
+        console.log(res.data)
         setRefresh((prev) => !prev);
       })
       .catch((err) => {
