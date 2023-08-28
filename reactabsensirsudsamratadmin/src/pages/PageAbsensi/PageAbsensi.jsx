@@ -13,16 +13,27 @@ export default function PageAbsensi() {
   const [filteredAbsences, setFilteredAbsences] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
+  const [searchTerm, setSearchTerm] = useState('');
+  // const dispatch = useDispatch();
 
-  const handleSearch = (e) => {
-    const { value } = e.target;
-    const newData = absences.filter((item) => {
-      const itemData = `${item.name.toUpperCase()} ${item.category.toUpperCase()}`;
-      const textData = value.toUpperCase();
-      return itemData.indexOf(textData) > -1;
-    });
-    setFilteredAbsences(newData);
-  };
+  // const handleSearch = (e) => {
+  //   const { value } = e.target;
+  //   const newData = absences.filter((item) => {
+  //     const itemData = `${item.name.toUpperCase()} ${item.category.toUpperCase()}`;
+  //     const textData = value.toUpperCase();
+  //     return itemData.indexOf(textData) > -1;
+  //   });
+  //   setFilteredAbsences(newData);
+  // };
+
+  const filteredData = absences.filter((data) => {
+    const nameLower = data.name.toLowerCase();
+    const searchTermLower = searchTerm.toLowerCase();
+
+    // Menggunakan ekspresi reguler untuk pencocokan yang lebih akurat
+    const searchRegex = new RegExp(searchTermLower, 'g');
+    return nameLower.match(searchRegex);
+  });
 
   const columns = [
     {
@@ -82,6 +93,10 @@ export default function PageAbsensi() {
 
   useEffect(() => {
     const fetchAbsences = async () => {
+      // try {
+      //   const response = await apiCheckToken.get('/ping');
+      //   console.log(response.data);
+      //   if (response.data) {
       try {
         const response = await api.get(
           '/api/v1/dev/attendances/all-with-schedule'
@@ -114,10 +129,7 @@ export default function PageAbsensi() {
           let statusPenilaian = 'red'; // Default: Tidak ada data clock in atau clock out
 
           if (clockInTime && clockOutTime) {
-            if (
-              clockInTime <= shiftStartTime &&
-              clockOutTime >= shiftEndTime
-            ) {
+            if (clockInTime <= shiftStartTime && clockOutTime >= shiftEndTime) {
               statusPenilaian = 'green'; // Clock in sebelum start_time dan clock out setelah end_time
             } else if (clockInTime > shiftStartTime) {
               statusPenilaian = 'yellow'; // Clock in setelah start_time
@@ -133,8 +145,7 @@ export default function PageAbsensi() {
             .join(', ')
             .replace(
               /\w\S*/g,
-              (txt) =>
-                txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+              (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
             );
 
           return {
@@ -155,6 +166,8 @@ export default function PageAbsensi() {
         console.log(ExtractData);
         console.log("dataReal", response.data);
         setIsLoading(false);
+        console.log('----------------------', ExtractData);
+
         setAbsences(ExtractData);
       } catch (error) {
         setIsLoading(false)
@@ -170,6 +183,11 @@ export default function PageAbsensi() {
       //   dispatch(expiredToken());
       // }
     };
+    //   } catch (error) {
+    //     console.log(error);
+    //     // dispatch(expiredToken());
+    //   }
+    // };
 
     fetchAbsences();
   }, []);
@@ -248,18 +266,25 @@ export default function PageAbsensi() {
         {/* Search Bar */}
         <div className="flex items-center relative w-full">
           <HiSearch className="absolute left-4" />
-          <input
+          {/* <input
             type="text"
             placeholder="Cari..."
             className="w-full pl-10 input input-bordered"
             onChange={handleSearch}
+          /> */}
+          <input
+            type="text"
+            placeholder="Cari..."
+            className="w-full pl-10 input input-bordered"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <p className="text-xs text-slate-500">{absences.length} Absen</p>
         <div>
           <DataTable
             columns={columns}
-            data={filteredAbsences}
+            data={filteredData}
             customStyles={customStyles}
           />
         </div>
