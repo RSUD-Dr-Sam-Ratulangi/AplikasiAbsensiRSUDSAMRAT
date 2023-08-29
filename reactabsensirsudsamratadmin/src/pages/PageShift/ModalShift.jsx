@@ -6,6 +6,8 @@ import { api } from "../../config/axios";
 import { MapContainer, TileLayer, useMapEvents, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 delete L.Icon.Default.prototype._getIconUrl;
 
@@ -30,6 +32,109 @@ const ModalShift = forwardRef((props, ref) => {
   const [options, setOptions] = useState([]);
   const [hospitalName, setsHospitalName] = useState("");
   const [locName, setLocName] = useState("Nama Lokasi");
+  const [scheduleId, setScheduleId] = useState(props.data.scheduleId);
+  const [reloadApi, setReloadApi] = useState(false);
+
+  // const [location, setLocation] = useState("");
+  const [shift, setShift] = useState("");
+  const [date, setDate] = useState("");
+
+  const editSuccess = () =>
+    toast("Schedule berhasil di edit", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "green" },
+    });
+
+  const createSuccess = () =>
+    toast("Schedule berhasil dibuat", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "green" },
+    });
+
+  const editFailed = () =>
+    toast("Eror, Schedule tidak berhasil di edit", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "red" },
+    });
+
+  const createFailed = () =>
+    toast("Eror, Schedule tidak berhasil dibuat", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "red" },
+    });
+
+  const locSuccess = () =>
+    toast("Lokasi berhasil dibuat", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "green" },
+    });
+
+  const locFailed = () =>
+    toast("Eror, lokasi tidak berhasil di edit", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "red" },
+    });
+
+  useEffect(() => {
+    if (props.type === "Edit") {
+      setDateSchedule(props.data?.scheduleDate);
+      // setLocation(props.data?.role);
+      setscheduleTime(props.data.shift?.name);
+      setScheduleId(props.data.scheduleId);
+    }
+  }, [props.data, props.type, props.scheduleId]);
+
+  const editScheduleData = () => {
+    const dataEdit = {
+      shiftId: null,
+      scheduleDate: dateSchedule,
+    };
+
+    if (scheduleTime === "Pagi") {
+      dataEdit.shiftId = 1;
+    } else if (scheduleTime === "Siang") {
+      dataEdit.shiftId = 2;
+    } else if (scheduleTime === "Malam") {
+      dataEdit.shiftId = 3;
+    } else if (scheduleTime === "Management") {
+      dataEdit.shiftId = 4;
+    }
+
+    api
+      .put(`/api/v1/dev/schedule/schedule_detail/${scheduleId}`, dataEdit)
+      .then((res) => {
+        console.log(res);
+        editSuccess();
+      })
+      .catch((err) => {
+        console.log(err);
+        editFailed();
+      });
+  };
 
   const postScheduleData = () => {
     const dataSchedule = {
@@ -58,9 +163,11 @@ const ModalShift = forwardRef((props, ref) => {
     api
       .post("/api/v1/dev/schedule", dataSchedule)
       .then((res) => {
+        createSuccess();
         console.log(res);
       })
       .catch((err) => {
+        createFailed();
         console.log(err);
       });
     api
@@ -75,7 +182,7 @@ const ModalShift = forwardRef((props, ref) => {
 
   const postLocationData = () => {
     const dataLocation = {
-      locationName: hospitalName.toString(),
+      locationName: hospitalName,
       latitude: markerPosition.lat,
       longitude: markerPosition.lng,
     };
@@ -83,9 +190,11 @@ const ModalShift = forwardRef((props, ref) => {
     api
       .post("/api/v1/dev/locations", dataLocation)
       .then((res) => {
+        locSuccess();
         console.log(res);
       })
       .catch((err) => {
+        locFailed();
         console.log(err);
       });
   };
@@ -100,10 +209,11 @@ const ModalShift = forwardRef((props, ref) => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [reloadApi]);
 
   const handleHospitalInput = (e) => {
-    setsHospitalName(e);
+    setsHospitalName(e.target.value);
+    console.log(hospitalName);
   };
 
   const handleOptionClick = (option) => {
@@ -200,6 +310,8 @@ const ModalShift = forwardRef((props, ref) => {
                 <button
                   onClick={() => {
                     postLocationData();
+                    closeModal();
+                    setReloadApi(!reloadApi);
                   }}
                   className="text-white btn bg-primary-2 hover:bg-primary-3 w-full"
                 >
@@ -210,7 +322,7 @@ const ModalShift = forwardRef((props, ref) => {
               <div>
                 {/* create schedule*/}
                 <div className="flex gap-4 mb-2 mt-4 items-center flex-col">
-                  <h1>Create Schedule</h1>
+                  <h1>{props.type === "Create" ? "Buat" : "Edit"} Schedule </h1>
                   <div className="relative inline-block text-left w-96">
                     <button
                       type="button"
@@ -292,6 +404,7 @@ const ModalShift = forwardRef((props, ref) => {
                   <input
                     type="date"
                     onChange={handleDateChangeSchedule}
+                    defaultValue={dateSchedule}
                     className="w-full text-gray-400 input input-bordered"
                   />
                   {/* create schedule data range*/}
@@ -317,12 +430,16 @@ const ModalShift = forwardRef((props, ref) => {
                   </div>
                   <button
                     onClick={() => {
-                      postScheduleData();
+                      if (props.type === "Edit") {
+                        editScheduleData();
+                      } else {
+                        postScheduleData();
+                      }
                       closeModal();
                     }}
                     className="text-white btn bg-primary-2 hover:bg-primary-3 w-96"
                   >
-                    Create Schedule
+                    {props.type === "Edit" ? "Edit" : "Buat"} Schedule
                   </button>
                 </div>
               </div>

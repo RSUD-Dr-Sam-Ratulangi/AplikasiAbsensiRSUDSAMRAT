@@ -12,6 +12,7 @@ export default function PageAbsensi() {
   const [absences, setAbsences] = useState([]);
   const [filteredAbsences, setFilteredAbsences] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [progress, setProgress]  = useState(0);
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState('');
   // const dispatch = useDispatch();

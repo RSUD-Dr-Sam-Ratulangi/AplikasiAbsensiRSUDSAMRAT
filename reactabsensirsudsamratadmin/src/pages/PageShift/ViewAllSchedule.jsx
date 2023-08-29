@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   HiSearch,
   HiChevronDown,
@@ -10,6 +10,7 @@ import DataTable from "react-data-table-component";
 import { api } from "../../config/axios";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
+import Popup from "reactjs-popup";
 import autoTable from "jspdf-autotable";
 
 export default function ViewAllSchedule() {
@@ -20,9 +21,12 @@ export default function ViewAllSchedule() {
   const [filteredSchedule, setFilteredSchedule] = useState([]);
   // const [absences, setAbsences] = useState([]);
   const [scheduleTime, setscheduleTime] = useState("Shift");
+  const [employeeName, setEmployeeName] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [employeeSchedule, setEmployeeSchedule] = useState([]);
+  const modalEmployee = useRef(null);
 
   const [schedule, setSchedule] = useState([]);
 
@@ -31,6 +35,22 @@ export default function ViewAllSchedule() {
   // );
 
   const navigate = useNavigate();
+
+  function filterSchedules(schedules, id, name) {
+    setEmployeeSchedule(
+      schedules.filter((schedule) => {
+        return schedule.employees.some(
+          (employee) => employee.employeeId === id
+        );
+      })
+    );
+    setEmployeeName(name);
+  }
+
+  function openScheduleModal(schedules, id, name) {
+    filterSchedules(schedules, id, name);
+    modalEmployee.current.open();
+  }
 
   const generatePDF = () => {
     let data = filteredSchedule.map((employee) => {
@@ -52,36 +72,51 @@ export default function ViewAllSchedule() {
     console.log(data);
   };
 
-  const studentData = [
-    {
-      id: 1,
-      name: "Neeraj",
-      email: "neeraj@gmail.com",
-      year: 2015,
-      fee: 167000,
-    },
-    {
-      id: 2,
-      name: "Vikas",
-      email: "vikas@gmail.com",
-      year: 2013,
-      fee: 785462,
-    },
+  const handleGeneratePDFSchedule = (schedules, id, name) => {
+    const filteredSchedules = schedules.filter((schedule) => {
+      return schedule.employees.some((employee) => employee.employeeId === id);
+    });
+    generatePDFSchedule(filteredSchedules, name);
+  };
 
-    {
-      id: 3,
-      name: "Rahul",
-      email: "rahul@gmail.com",
-      year: 2020,
-      fee: 784596,
-    },
-  ];
+  const generatePDFSchedule = (filteredSchedules, name) => {
+    const doc = new jsPDF();
+    let data = filteredSchedules.map((schedule) => {
+      return {
+        id: schedule?.scheduleId,
+        date: schedule?.scheduleDate,
+        shift: schedule.shift?.name,
+        time: `${schedule.shift.start_time} - ${schedule.shift.end_time}`,
+        location: schedule?.location,
+      };
+    });
+
+    doc.text(`Jadwal ${name}`, 20, 10);
+    doc.autoTable({
+      theme: "grid",
+      columns: pdfschedulecolumns.map((col) => ({
+        ...col,
+        dataKey: col.field,
+      })),
+      body: data,
+    });
+
+    doc.save("table.pdf");
+  };
 
   const pdfcolumns = [
     { title: "Name", field: "name" },
     { title: "Bidang", field: "bidang" },
     { title: "Password", field: "password" },
     { title: "NIK", field: "nik", type: "numeric" },
+  ];
+
+  const pdfschedulecolumns = [
+    { title: "ID", field: "id", type: "numeric" },
+    { title: "Date", field: "date" },
+    { title: "Shift", field: "shift" },
+    { title: "Time", field: "time" },
+    { title: "Location", field: "location" },
   ];
 
   const handleOptionClick = (option) => {
@@ -92,6 +127,30 @@ export default function ViewAllSchedule() {
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
+
+  const employeeColumns = [
+    {
+      name: "ID",
+      selector: (row) => row.scheduleId,
+      width: "100px",
+    },
+    {
+      name: "Date",
+      selector: (row) => row.scheduleDate,
+    },
+    {
+      name: "Shift",
+      cell: (row) => row.shift.name,
+    },
+    {
+      name: "Time",
+      cell: (row) => `${row.shift.start_time} - ${row.shift.end_time}`,
+    },
+    {
+      name: "Location",
+      cell: (row) => row?.location,
+    },
+  ];
 
   const columns = [
     {
@@ -117,12 +176,18 @@ export default function ViewAllSchedule() {
           <button
             type="button"
             className="mr-2 text-white btn btn-sm bg-primary-2 hover:bg-primary-3"
+            onClick={() => {
+              handleGeneratePDFSchedule(schedule, row.employeeId, row.name);
+            }}
           >
             <HiDownload />
           </button>
           <button
             type="button"
             className=" mr-2 btn btn-sm text-white bg-primary-2 hover:bg-primary-3"
+            onClick={() => {
+              openScheduleModal(schedule, row.employeeId, row.name);
+            }}
           >
             <HiOutlinePencil />
           </button>
@@ -240,6 +305,25 @@ export default function ViewAllSchedule() {
 
   return (
     <div>
+      <Popup
+        ref={modalEmployee}
+        modal
+        contentStyle={{
+          borderRadius: "12px",
+          padding: "2rem",
+          width: "45rem",
+          height: "35rem",
+        }}
+      >
+        <h3>Jadwal {employeeName}</h3>
+        <div className=" overflow-auto max-h-[30rem]">
+          <DataTable
+            columns={employeeColumns}
+            data={employeeSchedule}
+            customStyles={customStyles}
+          />
+        </div>
+      </Popup>
       <button
         className="btn bg-transparent border-none"
         onClick={() => navigate(`/shift`)}

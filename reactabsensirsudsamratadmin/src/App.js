@@ -25,6 +25,7 @@ export const router = createBrowserRouter(
         <Route path="/pengumuman" element={<PagePengumuman />} />
         <Route path="/shift" element={<PageShift />} />
         <Route path="/shift/:scheduleId" element={<PageEmployeeSchedule />} />
+        <Route path="/shift/allschedule" element={<ViewAllSchedule />} />
         <Route path="/example" element={<PageExampleClient />} />
         <Route path="/example-client" element={<PageExampleClient />} />
         <Route path="/shift/allschedule" element={<ViewAllSchedule />} />
