@@ -21,8 +21,8 @@ const Attendance = ({navigation}: any) => {
     const circleRadius = 100;
 
     useEffect(() => {
-        setCenterCoordinate({ latitude: 1.3093163807571013, longitude: 124.91624948476151 });//RSUD SAMRAT
-        // setCenterCoordinate({ latitude: 1.3022592741080485, longitude: 124.82832709583698 });//testing area
+        // setCenterCoordinate({ latitude: 1.3093163807571013, longitude: 124.91624948476151 });//RSUD SAMRAT
+        setCenterCoordinate({ latitude: 1.3022592741080485, longitude: 124.82832709583698 });//testing area
         
         const requestLocationPermission = async () => {
             try {

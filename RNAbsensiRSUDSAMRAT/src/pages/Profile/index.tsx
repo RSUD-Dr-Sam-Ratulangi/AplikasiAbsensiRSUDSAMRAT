@@ -1,18 +1,35 @@
 import { StyleSheet, Text, View, Button, Alert, Image, SafeAreaView, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ProfilePicture, Ilustration7 } from '../../assets/images'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import axios from 'axios'
 
 const Profile = ({navigation}: any) => {
     const [picture, setPicture] = useState(ProfilePicture);
-    const [name, setName] = useState('Leonardo Polandos S.Kom');
+    const [name, setName] = useState('');
     const [id, setId] = useState('19740516 199705 1 001');
-    const [division, setDivision] = useState('UPTIRS');
+    const [division, setDivision] = useState('UPTIRSsss');
     const [agency, setAgency] = useState('Pemerintah Provinsi Sulawesi Utara');
     const [office, setOffice] = useState('RSUD DR Sam Ratulangi Tondano');
-    const [eselon, setEselon] = useState('III - a');
-    const [rankAndClas, setRankAndClass] = useState('Pembina Tk. I / IV - B');
     const [appVersion, setAppVersion] = useState('v.2.3.0');
 
+    const getUserData = async () => {
+        const nik = await AsyncStorage.getItem('nik');
+        axios.get(`http://rsudsamrat.site:9999/api/v1/dev/employees/nik/${nik}`)
+                .then(function (response){
+                    console.log(response.data.name)
+                    setName(response.data.name)
+                    setId(response.data.nik)
+                    setDivision(response.data.role)
+                }).catch(function(error){
+                    console.log('error:', error)
+                })
+    }
+
+    useEffect(() => {
+        getUserData();
+    }, [])
+    
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
