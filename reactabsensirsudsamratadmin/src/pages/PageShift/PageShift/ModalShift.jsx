@@ -116,7 +116,7 @@ const ModalShift = forwardRef((props, ref) => {
 
     if (scheduleTime === "Pagi") {
       dataEdit.shiftId = 1;
-    } else if (scheduleTime === "Sore") {
+    } else if (scheduleTime === "Siang") {
       dataEdit.shiftId = 2;
     } else if (scheduleTime === "Malam") {
       dataEdit.shiftId = 3;
@@ -145,7 +145,7 @@ const ModalShift = forwardRef((props, ref) => {
 
     if (scheduleTime === "Pagi") {
       dataSchedule.shiftId = 1;
-    } else if (scheduleTime === "Sore") {
+    } else if (scheduleTime === "Siang") {
       dataSchedule.shiftId = 2;
     } else if (scheduleTime === "Malam") {
       dataSchedule.shiftId = 3;
@@ -253,7 +253,6 @@ const ModalShift = forwardRef((props, ref) => {
     setMarkerPosition({ lat: null, lng: null });
     setscheduleTime("Shift");
     setLocName("Nama Lokasi");
-    setDateSchedule("");
     props.onClose();
   };
 
@@ -384,7 +383,7 @@ const ModalShift = forwardRef((props, ref) => {
                       </li>
                       <li
                         className="block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white"
-                        onClick={() => handleOptionClick("Sore")}
+                        onClick={() => handleOptionClick("Siang")}
                       >
                         Sore
                       </li>

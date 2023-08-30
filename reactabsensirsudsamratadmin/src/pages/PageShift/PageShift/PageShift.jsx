@@ -26,7 +26,6 @@ export default function PageShift() {
   const [filteredSchedule, setFilteredSchedule] = useState([]);
   const [modalType, setModalType] = useState("location");
   const [selectedSchedule, setSelectedSchedule] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(0);
   const dummyString = "null";
   const modalDelete = useRef(null);
@@ -146,11 +145,9 @@ export default function PageShift() {
         setSchedule(res.data);
         setFilteredSchedule(res.data);
         console.log(res.data);
-        setIsLoading(false);
       })
       .catch((err) => {
         console.log(err);
-        setIsLoading(false)
       });
   }, [reloadApi]);
 
@@ -222,13 +219,7 @@ export default function PageShift() {
   }, [startDate, endDate, schedule]);
 
   return (
-    <>
-    {isLoading ? (
-      <div className='flex justify-center items-center h-56'>
-      <span className="loading loading-dots loading-lg"></span>
-      </div>
-    ) : (
-      <div>
+    <div>
       <ModalShift
         ref={modalShiftRef}
         onClose={() => {
@@ -250,7 +241,7 @@ export default function PageShift() {
         }}
       >
         <div className="flex flex-col justify-center items-center gap-4">
-          <h1>apakah anda yakin ingin menghapus schedule ini?</h1>
+          <h1>apakah anda yakin ingin menghapusSchedule ini?</h1>
           <div className="flex gap-4">
             <button
               className=" btn bg-primary-2 w-28"
@@ -388,7 +379,5 @@ export default function PageShift() {
         </div>
       </div>
     </div>
-    )}
-  </>
   );
 }

@@ -3,8 +3,8 @@ import {
   HiSearch,
   HiChevronDown,
   HiDownload,
+  HiOutlinePencil,
   HiChevronLeft,
-  HiViewList,
 } from "react-icons/hi";
 import DataTable from "react-data-table-component";
 import { api } from "../../config/axios";
@@ -189,7 +189,7 @@ export default function ViewAllSchedule() {
               openScheduleModal(schedule, row.employeeId, row.name);
             }}
           >
-            <HiViewList />
+            <HiOutlinePencil />
           </button>
         </div>
       ),

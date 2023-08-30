@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View, Button, Alert, Image, SafeAreaView, ScrollView } from 'react-native'
+import { StyleSheet, Text, View, Button, Alert, Image, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { ProfilePicture, Ilustration7 } from '../../assets/images'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
+import { IconLOgOut } from '../../assets'
 
 const Profile = ({navigation}: any) => {
     const [picture, setPicture] = useState(ProfilePicture);
@@ -17,7 +18,6 @@ const Profile = ({navigation}: any) => {
         const nik = await AsyncStorage.getItem('nik');
         axios.get(`http://rsudsamrat.site:9999/api/v1/dev/employees/nik/${nik}`)
                 .then(function (response){
-                    console.log(response.data.name)
                     setName(response.data.name)
                     setId(response.data.nik)
                     setDivision(response.data.role)
@@ -29,6 +29,12 @@ const Profile = ({navigation}: any) => {
     useEffect(() => {
         getUserData();
     }, [])
+
+    const handleLogOut = async () => {
+        await AsyncStorage.multiRemove(['nik', 'access_token', 'employeeId'], err => {
+            navigation.replace('Login')
+        })
+    }
     
     return (
         <SafeAreaView style={styles.container}>
@@ -39,7 +45,7 @@ const Profile = ({navigation}: any) => {
                 </View>
                 <View style={styles.contentContainer}>
                     <Text style={{fontSize: 20, color: '#86869E', fontWeight: '500', alignSelf: 'flex-start'}}>Data Pegawai</Text>
-                    <View style={styles.secContainer}>
+                    <View style={[styles.secContainer, {marginBottom: 42}]}>
                         <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 15}}>
                             <Image source={ProfilePicture} style={styles.profilePicture} />
                             <View>
@@ -65,6 +71,10 @@ const Profile = ({navigation}: any) => {
                         <Text style={styles.text}>App Version</Text>
                         <Text style={styles.text2}>{appVersion}</Text>
                     </View>
+                    <TouchableOpacity style={styles.buttonLogout} onPress={handleLogOut}>
+                        <Image source={IconLOgOut} style={{width: 24, height: 24}}/>
+                        <Text style={{fontSize: 16, fontWeight: '600', marginLeft: 5, color: '#014041'}}>Logout</Text>
+                    </TouchableOpacity>
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -114,7 +124,7 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
         borderRadius: 12,
-        marginBottom: 42,
+        marginBottom: 20,
         marginTop: 12
     },
     text:{
@@ -126,5 +136,19 @@ const styles = StyleSheet.create({
     text2:{
         fontSize: 16,
         color: '#424247'
-    }
+    },
+    buttonLogout:{
+        marginBottom: 142,
+        width: '100%',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        padding: 14,
+        backgroundColor: '#ffffff',
+        shadowColor: '#000000',
+        shadowOffset: {width:0, height:2},
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
+        borderRadius: 12,
+    },
 })

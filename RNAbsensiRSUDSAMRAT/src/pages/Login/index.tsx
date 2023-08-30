@@ -62,6 +62,17 @@ const Login = ({navigation}: any) => {
         .catch(function (error) {
             console.log('error:',error);
             Alert.alert(
+                'Error',
+                `${error}`,
+                [
+                    {
+                        text: 'OK',
+                        style: 'default'
+                    }
+                ]
+            )
+            
+            Alert.alert(
                 'NIK/Password tidak sesuai!',
                 'Pastikan NIK dan Password di isi dengan benar.',
                 [
