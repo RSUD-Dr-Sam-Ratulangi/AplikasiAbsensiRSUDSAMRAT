@@ -57,14 +57,6 @@ export default function PageAkun() {
       selector: (row) => row.name,
     },
     {
-      name: "Password",
-      selector: (row) => row.password,
-    },
-    {
-      name: "NIK",
-      selector: (row) => row.nik,
-    },
-    {
       name: "Bidang/Jabatan",
       selector: (row) => row.role,
     },

@@ -26,6 +26,7 @@ export default function ViewAllSchedule() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [employeeSchedule, setEmployeeSchedule] = useState([]);
+  const [employeeId, setEmployeeId] = useState(0);
   const modalEmployee = useRef(null);
 
   const [schedule, setSchedule] = useState([]);
@@ -45,6 +46,7 @@ export default function ViewAllSchedule() {
       })
     );
     setEmployeeName(name);
+    setEmployeeId(id);
   }
 
   function openScheduleModal(schedules, id, name) {
@@ -158,14 +160,6 @@ export default function ViewAllSchedule() {
       selector: (row) => row.name,
     },
     {
-      name: "Password",
-      selector: (row) => row.password,
-    },
-    {
-      name: "NIK",
-      selector: (row) => row.nik,
-    },
-    {
       name: "Bidang/Jabatan",
       selector: (row) => row.role,
     },
@@ -173,15 +167,6 @@ export default function ViewAllSchedule() {
       name: "Action",
       cell: (row) => (
         <div>
-          <button
-            type="button"
-            className="mr-2 text-white btn btn-sm bg-primary-2 hover:bg-primary-3"
-            onClick={() => {
-              handleGeneratePDFSchedule(schedule, row.employeeId, row.name);
-            }}
-          >
-            <HiDownload />
-          </button>
           <button
             type="button"
             className=" mr-2 btn btn-sm text-white bg-primary-2 hover:bg-primary-3"
@@ -312,7 +297,7 @@ export default function ViewAllSchedule() {
           borderRadius: "12px",
           padding: "2rem",
           width: "45rem",
-          height: "35rem",
+          height: "37rem",
         }}
       >
         <h3>Jadwal {employeeName}</h3>
@@ -322,6 +307,17 @@ export default function ViewAllSchedule() {
             data={employeeSchedule}
             customStyles={customStyles}
           />
+        </div>
+        <div className="flex justify-end mt-2">
+          <button
+            type="button"
+            className="mr-2 text-white btn btn-sm bg-primary-2 hover:bg-primary-3"
+            onClick={() => {
+              handleGeneratePDFSchedule(schedule, employeeId, employeeName);
+            }}
+          >
+            Download Schedule
+          </button>
         </div>
       </Popup>
       <button

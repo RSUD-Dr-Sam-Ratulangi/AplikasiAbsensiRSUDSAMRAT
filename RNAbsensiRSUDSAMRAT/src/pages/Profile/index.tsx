@@ -12,7 +12,7 @@ const Profile = ({navigation}: any) => {
     const [division, setDivision] = useState('UPTIRSsss');
     const [agency, setAgency] = useState('Pemerintah Provinsi Sulawesi Utara');
     const [office, setOffice] = useState('RSUD DR Sam Ratulangi Tondano');
-    const [appVersion, setAppVersion] = useState('v.2.3.0');
+    const [appVersion, setAppVersion] = useState('v.1.0.0');
 
     const getUserData = async () => {
         const nik = await AsyncStorage.getItem('nik');
