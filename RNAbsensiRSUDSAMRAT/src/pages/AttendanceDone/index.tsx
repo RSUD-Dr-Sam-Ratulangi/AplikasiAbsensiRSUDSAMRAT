@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 const AttendanceDone = ({navigation}: any) => {
     useEffect(() => {
         setTimeout(() => {
-            navigation.replace('Tabs')
+            navigation.push('Tabs')
         }, 3000);
     }, [])
   return (

@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert } from 'react-native'
+import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert, Platform } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import MapView, { PROVIDER_GOOGLE, Circle } from 'react-native-maps';
-import { request, PERMISSIONS } from 'react-native-permissions';
+import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import * as geolib from 'geolib';
 
 const Attendance = ({navigation}: any) => {
@@ -25,13 +25,25 @@ const Attendance = ({navigation}: any) => {
         // setCenterCoordinate({ latitude: 1.3022592741080485, longitude: 124.82832709583698 });//testing area
         
         const requestLocationPermission = async () => {
-            try {
-                const granted = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-                if (granted === 'granted') {
-                    console.log('Location permission granted');
+            if (Platform.OS === 'android'){
+                try {
+                    const granted = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+                    if (granted === 'granted') {
+                        console.log('Location permission granted');
+                    }
+                } catch (error) {
+                console.error('Error requesting location permission:', error);
                 }
-            } catch (error) {
-            console.error('Error requesting location permission:', error);
+            } else if (Platform.OS === 'ios'){
+                const permission = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+                if (permission === RESULTS.DENIED) {
+                    const response = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+                    if (response === RESULTS.GRANTED) {
+                        console.log('Location permission granted (iOS).');
+                    } else {
+                        console.log('Location permission denied (iOS).');
+                    }
+                }
             }
         };
         requestLocationPermission();
@@ -68,6 +80,7 @@ const Attendance = ({navigation}: any) => {
     const handleClickCameraButton = () => {
         if(enabledAttendance && attendanceType){
             navigation.push('OpenCamera', {attendanceType});
+            // navigation.navigate('AttendanceDone');
         } else {
             Alert.alert(
                 'ALERT!',

@@ -14,6 +14,11 @@ const History = ({navigation}: any) => {
     const [data, setData] = useState([]);
     const [getMarkedDates, setGetMarkedDates] = useState();
     const [selectedDateData, setSelectedDateData] = useState(null);
+
+    const getdate = String(new Date().getDate()).padStart(2, '0'); 
+    const getmonth = String(new Date().getMonth() + 1).padStart(2, '0'); 
+    const getyear = String(new Date().getFullYear()).padStart(2, '0');
+    const currentDate = getyear + '-' + getmonth + '-' + getdate;
     
     const getEmployeeId = async () => {
         const employeeId = await AsyncStorage.getItem('employeeId');
@@ -74,7 +79,7 @@ const History = ({navigation}: any) => {
             style={{
                 height: 350,
             }}
-            current={'2023-08-01'}
+            current={currentDate}
             onDayPress={day => {
                 const selectedData = data.find(schedule => schedule.attendances?.some(attendance => attendance.scheduleDate === day.dateString));
                 if (selectedData) {

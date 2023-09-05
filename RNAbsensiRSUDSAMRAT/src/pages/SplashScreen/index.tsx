@@ -25,17 +25,17 @@ const SplashScreen = ({navigation}: any) => {
             const responseMSG = responseJSON.response.data;
 
             if(responseMSG === 'pong'){
-                navigation.replace('Tabs');
+                navigation.navigate('Tabs');
             } else {
                 setTimeout(() => {
-                    navigation.replace('Login')
+                    navigation.navigate('Login')
                 }, 3000);
             }
         })
         .catch(function (error){
             console.log("error ",error.status);
             setTimeout(() => {
-                navigation.replace('Login')
+                navigation.navigate('Login')
             }, 3000);
         })
     }

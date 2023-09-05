@@ -1,9 +1,11 @@
-import { StyleSheet, Text, View, Button, Alert, Image, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, Button, Alert, Image, SafeAreaView, ScrollView, TouchableOpacity, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { ProfilePicture, Ilustration7 } from '../../assets/images'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
 import { IconLOgOut } from '../../assets'
+import { useNavigation } from '@react-navigation/native'
+import { PERMISSIONS, check, request, RESULTS } from 'react-native-permissions'
 
 const Profile = ({navigation}: any) => {
     const [picture, setPicture] = useState(ProfilePicture);
@@ -13,6 +15,8 @@ const Profile = ({navigation}: any) => {
     const [agency, setAgency] = useState('Pemerintah Provinsi Sulawesi Utara');
     const [office, setOffice] = useState('RSUD DR Sam Ratulangi Tondano');
     const [appVersion, setAppVersion] = useState('v.1.0.0');
+
+    const newNavigation = useNavigation();
 
     const getUserData = async () => {
         const nik = await AsyncStorage.getItem('nik');
@@ -27,12 +31,34 @@ const Profile = ({navigation}: any) => {
     }
 
     useEffect(() => {
-        getUserData();
+        AsyncStorage.getItem('access_token')
+        .then((result) => {
+            console.log('access_token', result);
+            if(result){
+                getUserData();
+            } else {
+                handleLogOut();
+            }
+        }).catch((err) => {
+            console.log('error', err)
+        });
     }, [])
 
     const handleLogOut = async () => {
         await AsyncStorage.multiRemove(['nik', 'access_token', 'employeeId'], err => {
-            navigation.replace('Login')
+            if(err === null){
+                if (Platform.OS === 'android'){
+                    navigation.reset({
+                        index: 0,
+                        routes: [{name: 'Login'}]
+                    })
+                } else if (Platform.OS === 'ios'){
+                    navigation.push('Login')
+                }
+                console.log('Logout from the app!')
+            } else {
+                console.log(err)
+            }
         })
     }
     

@@ -44,7 +44,7 @@ const Login = ({navigation}: any) => {
             storeAccessToken(access_token, nik);
             
             if(access_token){
-                navigation?.replace('Tabs');
+                navigation.push('Tabs');
             } else {
                 console.log("No access token found!")
                 Alert.alert(

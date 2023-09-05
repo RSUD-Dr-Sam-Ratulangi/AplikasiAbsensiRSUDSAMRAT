@@ -60,6 +60,7 @@ function Tabs({navigation}) {
     
     return (
         <Tab.Navigator
+            detachInactiveScreens={false}
             screenOptions={{
                 tabBarShowLabel: false,
                 tabBarStyle:{

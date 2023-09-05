@@ -63,6 +63,11 @@ const App = () => {
             options={{headerShown: false}}
           />
           <Stack.Screen
+            name='Profile'
+            component={Profile}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
             name='OpenCamera'
             component={OpenCamera}
             options={{headerShown: false}}
