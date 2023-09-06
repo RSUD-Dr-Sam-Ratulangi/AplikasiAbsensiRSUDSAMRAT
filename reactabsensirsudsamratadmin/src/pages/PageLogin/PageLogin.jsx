@@ -66,7 +66,7 @@ export default function LoginPage() {
                     type='text'
                     value={nikUser}
                     onChange={handleChangeUserNik}
-                    className='input bg-transparent rounded-none focus:outline-none input-ghost border-b-black border-l-white border-r-white border-t-white'
+                    className='input bg-transparent rounded-none text-black focus:outline-none input-ghost border-b-black border-l-white border-r-white border-t-white'
                   />
                 </div>
                 <div className='form-control'>
@@ -77,7 +77,7 @@ export default function LoginPage() {
                     type='password'
                     value={password}
                     onChange={handleChangePassword}
-                    className='input focus:outline-none rounded-none border-b-black border-l-white border-r-white border-t-white  bg-transparent'
+                    className='input focus:outline-none rounded-none text-black border-b-black border-l-white border-r-white border-t-white  bg-transparent'
                   />
                 </div>
                 <div className='form-control mt-6'>

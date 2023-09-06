@@ -17,41 +17,35 @@ export default function PageAbsensi() {
   const [searchTerm, setSearchTerm] = useState('');
   // const dispatch = useDispatch();
 
-  // const handleSearch = (e) => {
-  //   const { value } = e.target;
-  //   const newData = absences.filter((item) => {
-  //     const itemData = `${item.name.toUpperCase()} ${item.category.toUpperCase()}`;
-  //     const textData = value.toUpperCase();
-  //     return itemData.indexOf(textData) > -1;
-  //   });
-  //   setFilteredAbsences(newData);
-  // };
+  console.log('absences', absences);
+  console.log('filteredAbsences', filteredAbsences);
 
-  const filteredData = absences.filter((data) => {
-    const nameLower = data.name.toLowerCase();
-    const searchTermLower = searchTerm.toLowerCase();
-
-    // Menggunakan ekspresi reguler untuk pencocokan yang lebih akurat
-    const searchRegex = new RegExp(searchTermLower, 'g');
-    return nameLower.match(searchRegex);
-  });
+  const handleSearch = (e) => {
+    const { value } = e.target;
+    const newData = absences.filter((item) => {
+      const itemData = `${item.name.toUpperCase()} ${item.category.toUpperCase()}`;
+      const textData = value.toUpperCase();
+      return itemData.indexOf(textData) > -1;
+    });
+    setFilteredAbsences(newData);
+  };
 
   const columns = [
     {
       name: 'Nama',
-      selector: (row) => row.name,
+      selector: (row) => row.name
     },
     {
       name: 'Waktu',
-      selector: (row) => row.time,
+      selector: (row) => row.time
     },
     {
       name: 'Sif',
-      selector: (row) => row.shift,
+      selector: (row) => row.shift
     },
     {
       name: 'Kategori',
-      selector: (row) => row.category,
+      selector: (row) => row.category
     },
     {
       name: 'Presensi',
@@ -69,27 +63,26 @@ export default function PageAbsensi() {
               : 'bg-transparent'
           }`}
         />
-      ),
+      )
     },
     {
       name: 'Bukti',
       cell: (row) => (
         <button
-          type="button"
-          className="btn btn-sm bg-primary-2 text-white hover:bg-primary-3"
-        >
+          type='button'
+          className='btn btn-sm bg-primary-2 text-white hover:bg-primary-3'>
           <HiOutlineEye />
         </button>
-      ),
-    },
+      )
+    }
   ];
 
   const customStyles = {
     headCells: {
       style: {
-        fontWeight: 'bold',
-      },
-    },
+        fontWeight: 'bold'
+      }
+    }
   };
 
   useEffect(() => {
@@ -120,7 +113,7 @@ export default function PageAbsensi() {
               hour: '2-digit',
               minute: '2-digit',
               second: '2-digit',
-              hour12: false,
+              hour12: false
             };
             return waktu.toLocaleTimeString('en-US', options);
           };
@@ -161,7 +154,7 @@ export default function PageAbsensi() {
             ),
             name: employeeNamesString,
             time: attendance.scheduleDate,
-            shift: attendance.shift.name,
+            shift: attendance.shift.name
           };
         });
         console.log(ExtractData);
@@ -170,6 +163,7 @@ export default function PageAbsensi() {
         console.log('----------------------', ExtractData);
 
         setAbsences(ExtractData);
+        setFilteredAbsences(ExtractData);
       } catch (error) {
         setIsLoading(false)
         console.log(error);
@@ -206,11 +200,18 @@ export default function PageAbsensi() {
       return;
     }
 
+    console.log(startDateFormatted, endDateFormatted);
+
+    if (startDateFormatted > endDateFormatted) {
+      alert('Tanggal awal tidak boleh lebih besar dari tanggal akhir');
+      return;
+    }
+
     setFilteredAbsences(
       absences.filter((schedule) => {
         if (
-          schedule.scheduleDate >= startDateFormatted &&
-          schedule.scheduleDate <= endDateFormatted
+          schedule.time >= startDateFormatted &&
+          schedule.time <= endDateFormatted
         ) {
           return schedule;
         }
@@ -233,59 +234,49 @@ export default function PageAbsensi() {
           <div className="flex justify-center items-center gap-3">
             <div className="w-fit">
               Tanggal:
-              <div className="flex justify-center items-center gap-2">
+              <div className='flex justify-center items-center gap-2'>
                 {/* Aug 21, 2021 */}
                 <input
-                  type="date"
-                  defaultValue={new Date().toISOString().slice(0, 10)}
-                  className="input input-bordered"
+                  type='date'
+                  className='input input-bordered'
                   onChange={(e) => setStartDate(e.target.value)}
                 />
               </div>
             </div>
             <span>Sampai</span>
-            <div className="w-fit">
+            <div className='w-fit'>
               Tanggal:
-              <div className="flex justify-center items-center gap-2">
+              <div className='flex justify-center items-center gap-2'>
                 {/* Aug 21, 2021 */}
                 <input
-                  type="date"
-                  defaultValue={new Date().toISOString().slice(0, 10)}
-                  className="input input-bordered"
+                  type='date'
+                  className='input input-bordered'
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
             </div>
           </div>
           <button
-            type="button"
-            className="bg-primary-2 py-3 px-10 rounded-md font-semibold text-white"
-          >
+            type='button'
+            className='bg-primary-2 py-3 px-10 rounded-md font-semibold text-white'>
             Print PDF
           </button>
         </div>
         {/* Search Bar */}
-        <div className="flex items-center relative w-full">
-          <HiSearch className="absolute left-4" />
-          {/* <input
-            type="text"
-            placeholder="Cari..."
-            className="w-full pl-10 input input-bordered"
-            onChange={handleSearch}
-          /> */}
+        <div className='flex items-center relative w-full'>
+          <HiSearch className='absolute left-4' />
           <input
-            type="text"
-            placeholder="Cari..."
-            className="w-full pl-10 input input-bordered"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            type='text'
+            placeholder='Cari...'
+            className='w-full pl-10 input input-bordered'
+            onChange={handleSearch}
           />
         </div>
-        <p className="text-xs text-slate-500">{absences.length} Absen</p>
+        <p className='text-xs text-slate-500'>{absences.length} Absen</p>
         <div>
           <DataTable
             columns={columns}
-            data={filteredData}
+            data={filteredAbsences}
             customStyles={customStyles}
           />
         </div>
