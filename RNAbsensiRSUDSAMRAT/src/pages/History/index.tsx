@@ -29,7 +29,7 @@ const History = ({navigation}: any) => {
     
     const getData = (employeeId) => {
         setIsLoading(true);
-        const url = `http://rsudsamrat.site:9999/api/v1/dev/attendances/filter?employeeId=${4}`;
+        const url = `http://rsudsamrat.site:9999/api/v1/dev/attendances/filter?employeeId=${employeeId}`;
         axios.get(url)
         .then(function (response) {
             setData(response.data);
