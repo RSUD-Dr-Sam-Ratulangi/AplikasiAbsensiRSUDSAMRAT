@@ -5,12 +5,28 @@ import AttendanceCard from '../../components/AttendanceCard';
 import AnnouncementCard from '../../components/AnnouncementCard';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import socketService from '../../config/socket/socket';
 
 const Home = () => {
     const [name, setName] = useState('');
     const [totalDays, setTotalDays] = useState(0);
     const [checkInTime, setCheckInTime] = useState('');
     const [checkOutTime, setCheckOutTime] = useState('');
+    const [getNotification, setGetNotification] = useState([]);
+
+    useEffect(() => {
+        socketService.initializeSocket();
+    }, []);
+
+    useEffect(() => {
+        socketService.on('recieve_message', data => {
+            setGetNotification(prevMessage => [...prevMessage, data]);
+        });
+    
+        return () => {
+            socketService.removeListener('recieve_message');
+        };
+    }, []);
 
     const getNik = async () => {
         try {
@@ -122,8 +138,14 @@ const Home = () => {
                 </View>
                 <View style={styles.announcementContainer}>
                     <Text style={styles.text1}>Announcement</Text>
-                    <AnnouncementCard title="HOLIDAY HUT RI-78" desc="Agustus 16-17 Akan libur bersama dalam rangka HUT RI ke-78" date="Kamis, 17 Agustus 2023"/>
-                    <AnnouncementCard title="RELOKASI RSUD SAM RATULANGI TONDANO" desc="September Akan pindah ke rumah sakit baru Seluruh Staff MANAJEMEN" date="Senin, 1 Agustus 2023"/>
+                    {getNotification.map((notif, index) => (
+                        <AnnouncementCard 
+                            key={index}
+                            title={notif.title}
+                            desc={notif.desc}
+                            date={notif.date}
+                        />
+                    ))}
                 </View>
             </ScrollView>
         </SafeAreaView>

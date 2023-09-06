@@ -20,6 +20,8 @@ const Attendance = ({navigation}: any) => {
     const [mapRef, setMapRef] = useState(null);
     const [centerCoordinate, setCenterCoordinate] = useState();
     const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+    const [currentDate, setCurrentDate] = useState('');
+    const [scheduleDone, setScheduleDone] = useState(false);
     const circleRadius = 100;
 
     useEffect(() => {
@@ -53,7 +55,7 @@ const Attendance = ({navigation}: any) => {
             setDate(formattedDate);
             
             const attendanceDate = getyear + '-' + getmonth + '-' + getdate;
-            
+            setCurrentDate(attendanceDate);
             const employeeId = await AsyncStorage.getItem('employeeId');
 
             getScheduleTime(attendanceDate, employeeId);
@@ -82,11 +84,11 @@ const Attendance = ({navigation}: any) => {
                             setStatus('Belum absen');
                         } else {
                             setStatus('Sudah absen');
-                            // if(response.data !== null && response.data[0].clockOut == null){
-                            //     setStatus('Sudah absen (belum checkout)');
-                            // } else {
-                            //     setStatus('Sudah absen (sudah checkout)');
-                            // }
+                            if(response.data !== null && response.data[0].clockOut == null){
+                                setStatus('Belum Checkout');
+                            } else {
+                                setStatus('Sudah Checkout');
+                            }
                             setTime(endTime[0].substring(0, 5));
                         }
                     })
@@ -126,6 +128,36 @@ const Attendance = ({navigation}: any) => {
         requestLocationPermission();
     }, [])
 
+    const checkForSchedule = async (attendanceDate) => {
+        const employeeId = await AsyncStorage.getItem('employeeId');
+        await axios.get(`http://rsudsamrat.site:9999/api/v1/dev/attendances/byDateAndEmployee?attendanceDate=${attendanceDate}&employeeId=${employeeId}`)
+        .then(function(response){
+            if(response.data === `Employee hasn't taken any attendance on the given date.`){
+                setScheduleDone(true);
+            } else {
+                if(response.data[0].clockIn !== null && response.data[0].clockOut == null){
+                    setScheduleDone(true)   
+                }
+                if(response.data[0].clockIn !== null && response.data[0].clockOut !== null){
+                    setScheduleDone(false);
+                    Alert.alert(
+                        'Sudah waktunya pulang 🥳',
+                        'Absen hari ini sudah selesai. Terima kasih.',
+                        [
+                            {
+                                text: 'OK',
+                                style: 'default',
+                            },
+                        ],
+                    )
+                }
+            }
+        })
+        .catch(function(error){
+            console.log('failed to get attendanceId:', error)
+        })
+    }
+
     useEffect(() => {
         if (userLocation && geolib.isPointWithinRadius(userLocation, centerCoordinate, circleRadius)) {
             // Jika lokasi pengguna berada dalam radius circle
@@ -154,21 +186,28 @@ const Attendance = ({navigation}: any) => {
         }
     };
 
-    const handleClickCameraButton = () => {
-        if(enabledAttendance && attendanceType){
-            navigation.push('OpenCamera', {attendanceType});
-            // navigation.navigate('AttendanceDone');
-        } else {
-            Alert.alert(
-                'ALERT!',
-                'Pastikan anda berada di dalam area yang di tentukan & telah memilih lokasi kerja.',
-                [
-                    {
-                        text: 'OK',
-                        style: 'default',
-                    },
-                ],
-            )
+    const handleClickCameraButton = async () => {
+        await checkForSchedule(currentDate);
+        console.log(scheduleDone)
+        if(scheduleDone){
+            if(enabledAttendance && attendanceType){
+                if (Platform.OS === 'android'){
+                    navigation.navigate('OpenCamera', {attendanceType});
+                } else if (Platform.OS === 'ios'){
+                    navigation.push('OpenCamera', {attendanceType});
+                }
+            } else {
+                Alert.alert(
+                    'ALERT!',
+                    'Pastikan anda berada di dalam area yang di tentukan & telah memilih lokasi kerja.',
+                    [
+                        {
+                            text: 'OK',
+                            style: 'default',
+                        },
+                    ],
+                )
+            }
         }
     };
 

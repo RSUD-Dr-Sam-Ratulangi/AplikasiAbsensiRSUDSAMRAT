@@ -36,7 +36,7 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
                 .catch(function(error){
                     console.log('failed to get attendanceId:', error)
                 })
-            } 
+            }
 
             const getScheduledId = async (attendanceDate, employeeId) => {
                 await axios.get(`http://rsudsamrat.site:9999/api/v1/dev/schedule`)
@@ -93,18 +93,17 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
     }
 
     const checkOut = (attendanceId) => {
-        const data = {
-            "attendanceId": attendanceId,
-            "clockOut": `2023-09-04T14:05:00`, 
-            "locationLatOut": locationLatOut,
-            "locationLongOut": locationLongOut,
-            "selfieUrlCheckOut": selfieUrlCheckOut
-        }
+        let url = 'http://rsudsamrat.site:9999/api/v1/dev/attendances/updatePulang';
+        let data = new FormData();
 
-        axios.post(`http://rsudsamrat.site:9999/api/v1/dev/attendances/updatePulang`, data, {
-            headers: { 
-                'Content-Type': 'application/json'
-            },
+        data.append('attendanceId', `${attendanceId}`);
+        data.append('clockOut', `2023-09-04T14:05:00`);
+        data.append('locationLatOut', `${locationLatOut}`);
+        data.append('locationLongOut', `${locationLongOut}`);
+        data.append('selfieUrlCheckOut', `${selfieUrlCheckOut}`);
+
+        axios.post(url, data, {
+            headers: {"Content-Type": "multipart/form-data"}
         })
         .then((result) => {
             navigation.replace('AttendanceDone');
