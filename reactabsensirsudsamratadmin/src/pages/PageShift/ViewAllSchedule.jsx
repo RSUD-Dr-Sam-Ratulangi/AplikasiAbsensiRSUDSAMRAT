@@ -387,7 +387,7 @@ export default function ViewAllSchedule() {
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
                     onClick={() => handleOptionClick("Pagi")}
                   >
-                    Pagi/Management
+                    Pagi / Management
                   </li>
                   <li
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
