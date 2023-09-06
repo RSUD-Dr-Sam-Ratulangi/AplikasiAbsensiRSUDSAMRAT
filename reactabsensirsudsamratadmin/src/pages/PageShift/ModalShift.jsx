@@ -90,7 +90,7 @@ const ModalShift = forwardRef((props, ref) => {
     });
 
   const locFailed = () =>
-    toast("Eror, lokasi tidak berhasil di edit", {
+    toast("Eror, lokasi tidak berhasil di buat", {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -164,7 +164,8 @@ const ModalShift = forwardRef((props, ref) => {
       .post("/api/v1/dev/schedule", dataSchedule)
       .then((res) => {
         createSuccess();
-        console.log(res);
+
+        console.log(locId);
       })
       .catch((err) => {
         createFailed();

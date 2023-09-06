@@ -2,7 +2,13 @@ import React, { useState, forwardRef, useEffect, useRef } from "react";
 import Popup from "reactjs-popup";
 import modalBg from "../../assets/modal-bg.png";
 import profilePicture from "../../assets/profile-picture.png";
-import { HiUpload, HiEye, HiEyeOff, HiOutlineX } from "react-icons/hi";
+import {
+  HiUpload,
+  HiEye,
+  HiEyeOff,
+  HiOutlineX,
+  HiPencil,
+} from "react-icons/hi";
 import { api } from "../../config/axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -171,7 +177,7 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
                     type="button"
                     className="absolute p-1 text-2xl text-white rounded-full bg-primary-2 bottom-1 right-1"
                   >
-                    <HiUpload />
+                    <HiPencil />
                   </button>
                 </div>
               </div>

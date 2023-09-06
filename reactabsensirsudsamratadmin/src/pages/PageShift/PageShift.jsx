@@ -167,7 +167,7 @@ export default function PageShift() {
       if (startTime === "08:00:00") {
         shiftLabel = "Pagi";
       } else if (startTime === "14:00:00") {
-        shiftLabel = "Siang";
+        shiftLabel = "Sore";
       } else if (startTime === "16:00:00") {
         shiftLabel = "Malam";
       }
@@ -312,13 +312,13 @@ export default function PageShift() {
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
                     onClick={() => handleOptionClick("Pagi")}
                   >
-                    Pagi
+                    Pagi / Management
                   </li>
                   <li
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
-                    onClick={() => handleOptionClick("Siang")}
+                    onClick={() => handleOptionClick("Sore")}
                   >
-                    Siang
+                    Sore
                   </li>
                   <li
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
