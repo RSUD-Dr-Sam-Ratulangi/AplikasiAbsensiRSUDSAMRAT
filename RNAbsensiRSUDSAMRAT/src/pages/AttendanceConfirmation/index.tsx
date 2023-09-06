@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native'
+import { Image, StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Alert } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import SwipeButton from 'rn-swipe-button'
 import axios from 'axios'
@@ -85,6 +85,10 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
             })
         } catch (error) {
             console.log('error saat check in:', error);
+            Alert.alert('Kendala saat Check In', 'Pastikan anda memiliki jadwal. Jika ada kendala, mohon hubungi admin.', 
+            [
+                {text: 'OK', onPress: () => console.log('OK Pressed')},
+            ]);
         }
     }
 
@@ -107,6 +111,10 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
             console.log('berhasil check out')
         }).catch((err) => {
             console.log('error saat check out:',err)
+            Alert.alert('Tidak bisa Check Out', 'Pastikan anda Check Out sesuai jadwal. Jika ada kendala, mohon hubungi admin.', 
+            [
+                {text: 'OK', onPress: () => console.log('OK Pressed')},
+            ]);
         });
     }
 
