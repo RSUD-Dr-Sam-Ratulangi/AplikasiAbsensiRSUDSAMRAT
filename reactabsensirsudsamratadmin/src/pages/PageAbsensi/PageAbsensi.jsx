@@ -1,6 +1,7 @@
 import React from 'react';
 import { HiSearch, HiOutlineEye } from 'react-icons/hi';
 import DataTable from 'react-data-table-component';
+import ModalBukti from './ModalBukti';
 import { useState, useEffect } from 'react';
 import { api, apiCheckToken } from '../../config/axios';
 import { useDispatch } from 'react-redux';
@@ -15,6 +16,7 @@ export default function PageAbsensi() {
   const [progress, setProgress]  = useState(0);
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState('');
+  const modalBuktiRef = React.useRef();
   // const dispatch = useDispatch();
 
   console.log('absences', absences);
@@ -70,7 +72,10 @@ export default function PageAbsensi() {
       cell: (row) => (
         <button
           type='button'
-          className='btn btn-sm bg-primary-2 text-white hover:bg-primary-3'>
+          onClick={() => {
+            modalBuktiRef.current.open();
+          }}
+          className='text-white btn btn-sm bg-primary-2 hover:bg-primary-3'>
           <HiOutlineEye />
         </button>
       )
@@ -234,7 +239,7 @@ export default function PageAbsensi() {
           <div className="flex justify-center items-center gap-3">
             <div className="w-fit">
               Tanggal:
-              <div className='flex justify-center items-center gap-2'>
+              <div className='flex items-center justify-center gap-2'>
                 {/* Aug 21, 2021 */}
                 <input
                   type='date'
@@ -246,7 +251,7 @@ export default function PageAbsensi() {
             <span>Sampai</span>
             <div className='w-fit'>
               Tanggal:
-              <div className='flex justify-center items-center gap-2'>
+              <div className='flex items-center justify-center gap-2'>
                 {/* Aug 21, 2021 */}
                 <input
                   type='date'
@@ -258,12 +263,12 @@ export default function PageAbsensi() {
           </div>
           <button
             type='button'
-            className='bg-primary-2 py-3 px-10 rounded-md font-semibold text-white'>
+            className='px-10 py-3 font-semibold text-white rounded-md bg-primary-2'>
             Print PDF
           </button>
         </div>
         {/* Search Bar */}
-        <div className='flex items-center relative w-full'>
+        <div className='relative flex items-center w-full'>
           <HiSearch className='absolute left-4' />
           <input
             type='text'
@@ -283,6 +288,11 @@ export default function PageAbsensi() {
       </div>
     </div>
     )}
+      <ModalBukti
+        ref={modalBuktiRef}
+        // image={image}
+        onClose={() => modalBuktiRef.current.close()}
+      />
     </div>
   );
 }
