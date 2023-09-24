@@ -17,5 +17,7 @@ public interface AttendanceService {
     List<AttendanceScheduleIdDTO> getAllAttendanceWithScheduleId();
 
     List<AttendanceScheduleIdDTO> filterAttendances(AttendanceFilterDTO filterDTO);
+
+    List<AttendanceQualityResponseDTO> calculateQualityRateByEmployeeAndMonth(Long employeeId, int month);
 }
 
