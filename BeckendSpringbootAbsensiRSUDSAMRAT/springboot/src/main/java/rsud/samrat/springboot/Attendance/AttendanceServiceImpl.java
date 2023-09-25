@@ -61,15 +61,15 @@ public class AttendanceServiceImpl implements AttendanceService {
         EmployeeModel employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new NotFoundException("Employee not found with id: " + employeeId));
 
-        if (!schedule.getEmployees().contains(employee)) {
-            throw new IllegalArgumentException("Employee is not assigned to the schedule with id: " + scheduleId);
-        }
-
-        if (!employee.getSchedules().contains(schedule)) {
-            throw new IllegalArgumentException("Schedule does not contain the employee with id: " + employeeId);
-        }
-
         LocalDate attendanceDate = requestDTO.getAttendanceDate();
+        // Check if the employee has already checked in for the specified date
+        boolean hasCheckedIn = attendanceRepository.existsByEmployeesContainsAndAttendanceDate(employee, attendanceDate);
+
+        if (hasCheckedIn) {
+            throw new IllegalArgumentException("Employee has already checked in for the specified date: " + attendanceDate);
+        }
+
+
         LocalDate scheduleDate = schedule.getSchedule_date();
 
         // Check if attendance date is the same as the schedule date
@@ -201,22 +201,55 @@ public class AttendanceServiceImpl implements AttendanceService {
         List<AttendanceCreateResponseDTO> attendanceList = new ArrayList<>();
 
         for (AttendanceModel attendance : attendanceRecords) {
-            AttendanceCreateResponseDTO responseDTO = modelMapper.map(attendance, AttendanceCreateResponseDTO.class);
+            AttendanceCreateResponseDTO responseDTO = new AttendanceCreateResponseDTO();
+            responseDTO.setAttendanceId(attendance.getAttendance_id());
             responseDTO.setScheduleId(attendance.getSchedule().getSchedule_id());
-            responseDTO.setEmployee(modelMapper.map(attendance.getEmployees().get(0), CreateEmployeeResponseDTO.class));
-            responseDTO.setShift(modelMapper.map(attendance.getSchedule().getShift(), ShiftResponseDTO.class));
 
+            // Map EmployeeModel to CreateEmployeeResponseDTO
+            EmployeeModel employee = attendance.getEmployees().get(0);
+            CreateEmployeeResponseDTO employeeDTO = new CreateEmployeeResponseDTO();
+            employeeDTO.setEmployeeId(employee.getEmployee_id());
+            employeeDTO.setName(employee.getName());
+            // Set other employee properties
+            responseDTO.setEmployee(employeeDTO);
+
+            // Map ShiftModel to ShiftResponseDTO
+            ShiftModel shift = attendance.getSchedule().getShift();
+            ShiftResponseDTO shiftDTO = new ShiftResponseDTO();
+            shiftDTO.setShift_id(shift.getShift_id());
+            shiftDTO.setName(shift.getName());
+            // Set other shift properties
+            responseDTO.setShift(shiftDTO);
+
+            // Map LocationModel to LocationsCreateResponseDTO
             LocationModel location = attendance.getSchedule().getLocation();
             if (location != null) {
-                LocationsCreateResponseDTO locationDTO = modelMapper.map(location, LocationsCreateResponseDTO.class);
+                LocationsCreateResponseDTO locationDTO = new LocationsCreateResponseDTO();
+                locationDTO.setLocationId(location.getLocationId());
+                locationDTO.setLocationName(location.getLocationName());
+                locationDTO.setLatitude(location.getLatitude());
+                locationDTO.setLongitude(location.getLongitude());
                 responseDTO.setLocation(locationDTO);
             }
+
+            // Set other responseDTO properties
+            responseDTO.setStatus(attendance.getStatus());
+            responseDTO.setAttendanceType(attendance.getAttendanceType());
+            responseDTO.setClockIn(attendance.getClock_in());
+            responseDTO.setClockOut(attendance.getClock_out());
+            responseDTO.setLocationLatIn(attendance.getLocation_lat_In());
+            responseDTO.setLocationLongIn(attendance.getLocation_long_In());
+            responseDTO.setLocationLatOut(attendance.getLocation_lat_Out());
+            responseDTO.setLocationLongOut(attendance.getLocation_Long_Out());
+            responseDTO.setSelfieCheckIn(attendance.getSelfieCheckIn());
+            responseDTO.setSelfieCheckOut(attendance.getSelfieCheckOut());
 
             attendanceList.add(responseDTO);
         }
 
         return attendanceList;
     }
+
 
     @Override
     public AttendanceCreateResponseDTO updateAttendanceStatusAndCheckoutDetails(AttendanceUpdateRequestDTO requestDTO, MultipartFile selfieCheckOutImage) {
@@ -226,16 +259,27 @@ public class AttendanceServiceImpl implements AttendanceService {
         AttendanceModel attendance = attendanceRepository.findById(attendanceId)
                 .orElseThrow(() -> new NotFoundException("Attendance not found with id: " + attendanceId));
 
-
+        // Check if the employee has already checked out for this attendance
+        if (attendance.getStatus() == AttendanceStatus.CheckOut) {
+            throw new IllegalArgumentException("Employee has already checked out for this attendance.");
+        }
         // Update the checkout details
         attendance.setClock_out(requestDTO.getClockOut());
         attendance.setLocation_lat_Out(requestDTO.getLocationLatOut());
         attendance.setLocation_Long_Out(requestDTO.getLocationLongOut());
         if (selfieCheckOutImage != null && !selfieCheckOutImage.isEmpty()) {
             try {
-                attendance.setSelfieCheckOut(selfieCheckOutImage.getBytes());
+                int targetWidth = 800;
+                int targetHeight = 600;
+                float compressionQuality = 0.8f;
+
+                // Use the utility class for image compression
+                byte[] compressedImage = ImageCompressionUtil.compressImage(selfieCheckOutImage, targetWidth, targetHeight, compressionQuality);
+
+                // Set the compressed image data to the attendance model
+                attendance.setSelfieCheckOut(compressedImage);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to read selfieCheckInImage data.", e);
+                throw new RuntimeException("Failed to compress and store selfieCheckOutImage data.", e);
             }
         }
 
@@ -303,6 +347,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         return employeeDTO;
     }
 
+    //todo: paginations
     @Override
     public List<AttendanceScheduleDTO> getAllAttendanceWithSchedule() {
         List<AttendanceModel> attendanceRecords = attendanceRepository.findAll();
@@ -445,6 +490,91 @@ public class AttendanceServiceImpl implements AttendanceService {
                 && (filterDTO.getPlacementName() == null || attendance.getEmployees().stream()
                 .anyMatch(employee -> employee.getPlacement().getName().contains(filterDTO.getPlacementName())));
     }
+
+
+
+
+
+    @Override
+    public List<AttendanceQualityResponseDTO> calculateQualityRateByEmployeeAndMonth(Long employeeId, int month) {
+        List<AttendanceModel> filteredAttendances = attendanceRepository.findAll().stream()
+                .filter(attendance -> matchesFilter(attendance, employeeId, month))
+                .collect(Collectors.toList());
+
+        Map<Long, AttendanceQualityResponseDTO> employeeIdToDtoMap = new HashMap<>();
+
+        for (AttendanceModel attendance : filteredAttendances) {
+            Long currentEmployeeId = attendance.getEmployees().get(0).getEmployee_id();
+            AttendanceQualityResponseDTO dto = employeeIdToDtoMap.getOrDefault(currentEmployeeId, new AttendanceQualityResponseDTO());
+            dto.setEmployeeId(currentEmployeeId);
+            dto.setEmployeeName(attendance.getEmployees().get(0).getName());
+            dto.setMonth(month); // Set the provided month
+
+            // Initialize the attendanceStatusCount and attendanceStateCount maps if they're null
+            Map<String, Integer> attendanceStatusCount = dto.getAttendanceStatusCount();
+            if (attendanceStatusCount == null) {
+                attendanceStatusCount = new HashMap<>();
+            }
+
+            Map<String, Integer> attendanceStateCount = dto.getAttendanceStateCount();
+            if (attendanceStateCount == null) {
+                attendanceStateCount = new HashMap<>();
+            }
+
+            // Update the attendance status count
+            String status = attendance.getStatus().toString();
+            attendanceStatusCount.put(status, attendanceStatusCount.getOrDefault(status, 0) + 1);
+            dto.setAttendanceStatusCount(attendanceStatusCount);
+
+            // Update the attendance state count
+            AttendanceState attendanceState = attendance.getAttendanceState();
+            if (attendanceState != null) {
+                String state = attendanceState.toString();
+                attendanceStateCount.put(state, attendanceStateCount.getOrDefault(state, 0) + 1);
+                dto.setAttendanceStateCount(attendanceStateCount);
+            }
+
+
+            // Calculate quality rate
+            double qualityRate = calculateQualityRate(dto);
+            dto.setQualityRate(qualityRate);
+
+            employeeIdToDtoMap.put(currentEmployeeId, dto);
+        }
+
+        return new ArrayList<>(employeeIdToDtoMap.values());
+    }
+
+    private boolean matchesFilter(AttendanceModel attendance, Long employeeId, int month) {
+        LocalDate attendanceDate = attendance.getAttendance_date();
+        Long currentEmployeeId = attendance.getEmployees().get(0).getEmployee_id();
+
+        return currentEmployeeId.equals(employeeId) && attendanceDate.getMonthValue() == month;
+    }
+
+    private double calculateQualityRate(AttendanceQualityResponseDTO dto) {
+        // Define constants for weights
+        final double ON_TIME_WEIGHT = 1.0;
+        final double LATE_WEIGHT = 0.8;
+        final double ABSENT_WEIGHT = 0.5;
+
+        Map<String, Integer> attendanceStateCount = dto.getAttendanceStateCount();
+
+        int totalStates = attendanceStateCount.values().stream().mapToInt(Integer::intValue).sum();
+
+        double weightedSum = attendanceStateCount.getOrDefault(AttendanceState.ON_TIME.toString(), 0) * ON_TIME_WEIGHT
+                + attendanceStateCount.getOrDefault(AttendanceState.LATE.toString(), 0) * LATE_WEIGHT
+                + attendanceStateCount.getOrDefault(AttendanceState.ABSENT.toString(), 0) * ABSENT_WEIGHT;
+
+        if (totalStates == 0) {
+            return 0; // Avoid division by zero
+        }
+
+        return (weightedSum / totalStates) * 100.0;
+    }
+
+
+
 
 
 

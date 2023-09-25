@@ -74,6 +74,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     // EmployeeServiceImpl.java
+
+
     @Override
     public List<GetAllEmployeeResponseDTO> getAllEmployees() {
         List<EmployeeModel> employees = employeeRepository.findAll();
@@ -200,5 +202,10 @@ public CreateEmployeeResponseDTO getLatestEmployeeByNIK(String nik) {
 }
 
 
+
+    @Override
+    public long countTotalEmployees() {
+        return employeeRepository.count();
+    }
 
 }

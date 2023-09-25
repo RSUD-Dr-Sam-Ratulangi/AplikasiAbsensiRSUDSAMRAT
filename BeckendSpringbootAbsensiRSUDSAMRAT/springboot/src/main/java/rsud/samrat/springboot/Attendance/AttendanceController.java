@@ -51,37 +51,44 @@ public class AttendanceController {
     }
 
     @PostMapping("/updatePulang")
-    public ResponseEntity<String> updateAttendanceStatusAndCheckoutDetails(
+    public ResponseEntity<?> updateAttendanceStatusAndCheckoutDetails(
             @RequestParam(value = "selfieCheckOutImage", required = false) MultipartFile selfieCheckOutImage,
             @ModelAttribute AttendanceUpdateRequestDTO requestDTO) {
         try {
-            attendanceService.updateAttendanceStatusAndCheckoutDetails(requestDTO, selfieCheckOutImage);
-            return new ResponseEntity<>("Attendance status and checkout details updated successfully.", HttpStatus.OK);
+            AttendanceCreateResponseDTO updatedAttendance = attendanceService.updateAttendanceStatusAndCheckoutDetails(requestDTO, selfieCheckOutImage);
+            return new ResponseEntity<>(updatedAttendance, HttpStatus.OK);
         } catch (NotFoundException e) {
             return new ResponseEntity<>("Attendance not found.", HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException e) {
+            // Handle the custom exception message
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>("Error occurred while updating attendance.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
 
-    @GetMapping("/byDateAndEmployee")
-    public ResponseEntity<List<AttendanceCreateResponseDTO>> getAttendanceByDateAndEmployee(
-            @RequestParam("attendanceDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate attendanceDate,
-            @RequestParam("employeeId") Long employeeId
-    ) {
-        try {
-            List<AttendanceCreateResponseDTO> attendanceList = attendanceService.getAllAttendanceByDateAndEmployee(attendanceDate, employeeId);
-            if (attendanceList.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-            return new ResponseEntity<>(attendanceList, HttpStatus.OK);
-        } catch (NotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+
+//todo: response empty data
+@GetMapping("/byDateAndEmployee")
+public ResponseEntity<?> getAttendanceByDateAndEmployee(
+        @RequestParam("attendanceDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate attendanceDate,
+        @RequestParam("employeeId") Long employeeId
+) {
+    try {
+        List<AttendanceCreateResponseDTO> attendanceList = attendanceService.getAllAttendanceByDateAndEmployee(attendanceDate, employeeId);
+        if (attendanceList.isEmpty()) {
+            String message = "Employee hasn't taken any attendance on the given date.";
+            return new ResponseEntity<>(message, HttpStatus.OK);
         }
+        return new ResponseEntity<>(attendanceList, HttpStatus.OK);
+    } catch (NotFoundException e) {
+        return new ResponseEntity<>("Not found.", HttpStatus.NOT_FOUND);
+    } catch (Exception e) {
+        return new ResponseEntity<>("An error occurred.", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+}
+
 
     @GetMapping("/all-with-schedule")
     public ResponseEntity<List<AttendanceScheduleDTO>> getAllAttendanceWithSchedule() {
@@ -121,6 +128,15 @@ public class AttendanceController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/attendance/quality")
+    public ResponseEntity<List<AttendanceQualityResponseDTO>> calculateQualityRateByEmployeeAndMonth(
+            @RequestParam("employeeId") Long employeeId,
+            @RequestParam("month") int month
+    ) {
+        List<AttendanceQualityResponseDTO> qualityRateList = attendanceService.calculateQualityRateByEmployeeAndMonth(employeeId, month);
+        return ResponseEntity.ok(qualityRateList);
     }
 
 }

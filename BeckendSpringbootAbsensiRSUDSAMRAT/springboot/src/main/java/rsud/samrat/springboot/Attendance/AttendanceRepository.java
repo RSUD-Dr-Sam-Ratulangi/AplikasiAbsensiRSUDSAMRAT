@@ -20,4 +20,6 @@ public interface AttendanceRepository extends JpaRepository<AttendanceModel,Long
     @Query("SELECT a FROM AttendanceModel a JOIN a.employees e WHERE a.attendance_date = :attendanceDate AND e.employee_id = :employeeId")
     List<AttendanceModel> findAllByAttendanceDateAndEmployeeId(@Param("attendanceDate") LocalDate attendanceDate, @Param("employeeId") Long employeeId);
 
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM AttendanceModel a WHERE :employee MEMBER OF a.employees AND a.attendance_date = :attendanceDate")
+    boolean existsByEmployeesContainsAndAttendanceDate(EmployeeModel employee, LocalDate attendanceDate);
 }

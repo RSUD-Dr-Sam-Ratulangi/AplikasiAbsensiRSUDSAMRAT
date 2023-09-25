@@ -15,5 +15,9 @@ public interface EmployeeService {
     CreateEmployeeResponseDTO updateEmployee(Long employeeId, CreateEmployeeRequestDTO updateEmployeeRequestDTO);
     CreateEmployeeResponseDTO getLatestEmployeeByNIK(String nik);
 
+    long countTotalEmployees();
+
+
+
 }
 

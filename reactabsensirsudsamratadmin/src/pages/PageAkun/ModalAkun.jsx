@@ -103,7 +103,7 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
       role: jabatan,
       password: password,
       nik: nik,
-      placementId: akunData?.placement_id ?? 1,
+      placementId: akunData?.placement_id ?? 3,
     };
     const dataEdit = {
       name: name,
