@@ -15,6 +15,7 @@ export default function PageAbsensi() {
   const modalBuktiRef = React.useRef();
   const [imgCheckIn, setImgCheckIn] = useState(null);
   const [imgCheckOut, setImgCheckOut] = useState(null);
+  const [selectedData, setSelectedData] = useState(null);
 
   // const dispatch = useDispatch();
 
@@ -34,19 +35,19 @@ export default function PageAbsensi() {
   const columns = [
     {
       name: 'Nama',
-      selector: (row) => row.name,
+      selector: (row) => row.name
     },
     {
       name: 'Waktu',
-      selector: (row) => row.time,
+      selector: (row) => row.time
     },
     {
       name: 'Sif',
-      selector: (row) => row.shift,
+      selector: (row) => row.shift
     },
     {
       name: 'Kategori',
-      selector: (row) => row.category,
+      selector: (row) => row.category
     },
     {
       name: 'Presensi',
@@ -64,33 +65,33 @@ export default function PageAbsensi() {
               : 'bg-transparent'
           }`}
         />
-      ),
+      )
     },
     {
       name: 'Bukti',
       cell: (row) => (
         <button
-          type="button"
+          type='button'
           onClick={() => {
             setImgCheckIn(row.selfieCheckIn);
             setImgCheckOut(row.selfieCheckOut);
+            setSelectedData(row);
             modalBuktiRef.current.open();
             // setImage(row.selfieCheckIn);
           }}
-          className="text-white btn btn-sm bg-primary-2 hover:bg-primary-3"
-        >
+          className='text-white btn btn-sm bg-primary-2 hover:bg-primary-3'>
           <HiOutlineEye />
         </button>
-      ),
-    },
+      )
+    }
   ];
 
   const customStyles = {
     headCells: {
       style: {
-        fontWeight: 'bold',
-      },
-    },
+        fontWeight: 'bold'
+      }
+    }
   };
 
   useEffect(() => {
@@ -129,7 +130,7 @@ export default function PageAbsensi() {
               hour: '2-digit',
               minute: '2-digit',
               second: '2-digit',
-              hour12: false,
+              hour12: false
             };
             return waktu.toLocaleTimeString('en-US', options);
           };
@@ -172,7 +173,7 @@ export default function PageAbsensi() {
             time: attendance.scheduleDate,
             shift: attendance.shift.name,
             selfieCheckIn: selfieCheckIn,
-            selfieCheckOut: selfieCheckOut,
+            selfieCheckOut: selfieCheckOut
           };
         });
         console.log('----------------------', ExtractData);
@@ -231,55 +232,55 @@ export default function PageAbsensi() {
         ref={modalBuktiRef}
         imageCheckIn={imgCheckIn}
         imageCheckOut={imgCheckOut}
+        selectedData={selectedData}
         onClose={() => modalBuktiRef.current.close()}
       />
 
-      <h1 className="text-xl font-medium">Absensi</h1>
-      <div className="flex flex-col gap-3">
-        <div className="flex items-end justify-end gap-3">
-          <div className="flex items-center justify-center gap-3">
-            <div className="w-fit">
+      <h1 className='text-xl font-medium'>Absensi</h1>
+      <div className='flex flex-col gap-3'>
+        <div className='flex items-end justify-end gap-3'>
+          <div className='flex items-center justify-center gap-3'>
+            <div className='w-fit'>
               Tanggal:
-              <div className="flex items-center justify-center gap-2">
+              <div className='flex items-center justify-center gap-2'>
                 {/* Aug 21, 2021 */}
                 <input
-                  type="date"
-                  className="input input-bordered"
+                  type='date'
+                  className='input input-bordered'
                   onChange={(e) => setStartDate(e.target.value)}
                 />
               </div>
             </div>
             <span>Sampai</span>
-            <div className="w-fit">
+            <div className='w-fit'>
               Tanggal:
-              <div className="flex items-center justify-center gap-2">
+              <div className='flex items-center justify-center gap-2'>
                 {/* Aug 21, 2021 */}
                 <input
-                  type="date"
-                  className="input input-bordered"
+                  type='date'
+                  className='input input-bordered'
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
             </div>
           </div>
           <button
-            type="button"
-            className="px-10 py-3 font-semibold text-white rounded-md bg-primary-2"
-          >
+            type='button'
+            className='px-10 py-3 font-semibold text-white rounded-md bg-primary-2'>
             Print PDF
           </button>
         </div>
         {/* Search Bar */}
-        <div className="relative flex items-center w-full">
-          <HiSearch className="absolute left-4" />
+        <div className='relative flex items-center w-full'>
+          <HiSearch className='absolute left-4' />
           <input
-            type="text"
-            placeholder="Cari..."
-            className="w-full pl-10 input input-bordered"
+            type='text'
+            placeholder='Cari...'
+            className='w-full pl-10 input input-bordered'
             onChange={handleSearch}
           />
         </div>
-        <p className="text-xs text-slate-500">{absences.length} Absen</p>
+        <p className='text-xs text-slate-500'>{absences.length} Absen</p>
         <div>
           <DataTable
             columns={columns}

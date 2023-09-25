@@ -5,6 +5,7 @@ import {
   HiDownload,
   HiChevronLeft,
   HiViewList,
+  HiAnnotation,
 } from "react-icons/hi";
 import DataTable from "react-data-table-component";
 import { api } from "../../config/axios";
@@ -27,7 +28,9 @@ export default function ViewAllSchedule() {
   const [endDate, setEndDate] = useState(null);
   const [employeeSchedule, setEmployeeSchedule] = useState([]);
   const [employeeId, setEmployeeId] = useState(0);
+  const [qualityRate, setQualityRate] = useState([]);
   const modalEmployee = useRef(null);
+  const modalQuality = useRef(null);
 
   const [schedule, setSchedule] = useState([]);
 
@@ -52,6 +55,22 @@ export default function ViewAllSchedule() {
   function openScheduleModal(schedules, id, name) {
     filterSchedules(schedules, id, name);
     modalEmployee.current.open();
+  }
+
+  function openQualityModal(id, name) {
+    api
+      .get(
+        `/api/v1/dev/attendances/attendance/quality?employeeId=${id}&month=9`
+      )
+      .then((res) => {
+        setQualityRate(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setEmployeeName(name);
+    setEmployeeId(id);
+    modalQuality.current.open();
   }
 
   const generatePDF = () => {
@@ -176,8 +195,46 @@ export default function ViewAllSchedule() {
           >
             <HiViewList />
           </button>
+          <button
+            type="button"
+            className=" mr-2 btn btn-sm text-white bg-primary-2 hover:bg-primary-3"
+            onClick={() => {
+              openQualityModal(row.employeeId, row.name);
+            }}
+          >
+            <HiAnnotation />
+          </button>
         </div>
       ),
+    },
+  ];
+
+  const qualityRateColumns = [
+    {
+      name: "ID",
+      selector: (row) => row.employeeId,
+      width: "3rem",
+    },
+    {
+      name: "Nama",
+      selector: (row) => row.employeeName,
+      width: "10rem",
+    },
+    {
+      name: "Month",
+      cell: (row) => row.month,
+    },
+    {
+      name: "Checkout",
+      cell: (row) => row.attendanceStatusCount.CheckOut,
+    },
+    {
+      name: "On Time",
+      cell: (row) => row.attendanceStateCount.ON_TIME,
+    },
+    {
+      name: "Quality Rate",
+      cell: (row) => row.qualityRate,
     },
   ];
 
@@ -213,6 +270,18 @@ export default function ViewAllSchedule() {
         console.log(err);
       });
   }, [reloadApi]);
+
+  // useEffect(() => {
+  //   // Fetch data from API
+  //   api
+  //     .get("/api/v1/dev/attendances/attendance/quality?employeeId=25&month=9")
+  //     .then((res) => {
+  //       setQualityRate(res.data);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // }, [reloadApi]);
 
   useEffect(() => {
     if (searchTerm === "") {
@@ -301,6 +370,7 @@ export default function ViewAllSchedule() {
         }}
       >
         <h3>Jadwal {employeeName}</h3>
+
         <div className=" overflow-auto max-h-[30rem]">
           <DataTable
             columns={employeeColumns}
@@ -318,6 +388,25 @@ export default function ViewAllSchedule() {
           >
             Download Schedule
           </button>
+        </div>
+      </Popup>
+      <Popup
+        ref={modalQuality}
+        modal
+        contentStyle={{
+          borderRadius: "12px",
+          padding: "2rem",
+          width: "50rem",
+          height: "37rem",
+        }}
+      >
+        <h3>Quality Rate {employeeName}</h3>
+        <div className=" overflow-auto max-h-[30rem]">
+          <DataTable
+            columns={qualityRateColumns}
+            data={qualityRate}
+            customStyles={customStyles}
+          />
         </div>
       </Popup>
       <button
