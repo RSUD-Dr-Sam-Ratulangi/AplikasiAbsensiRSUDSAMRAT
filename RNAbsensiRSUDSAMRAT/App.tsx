@@ -77,6 +77,11 @@ const App = () => {
             component={Profile}
             options={{headerShown: false}}
           />
+          <Stack.Screen
+            name='History'
+            component={History}
+            options={{headerShown: false}}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </>

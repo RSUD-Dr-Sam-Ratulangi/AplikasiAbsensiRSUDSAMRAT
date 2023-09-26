@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, Image, ScrollView } from 'react-native'
+import { StyleSheet, Text, View, SafeAreaView, Image, ScrollView, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Ilustration1, ProfilePicture } from '../../assets/images'
 import AttendanceCard from '../../components/AttendanceCard';
@@ -7,7 +7,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import socketService from '../../config/socket/socket';
 
-const Home = () => {
+const Home = ({navigation}) => {
     const [name, setName] = useState('');
     const [totalDays, setTotalDays] = useState(0);
     const [checkInTime, setCheckInTime] = useState('');
@@ -145,9 +145,9 @@ const Home = () => {
                         <AttendanceCard icon={require('./../../assets/icons/Signin.png')} title="Check In" time={checkInTime} addInfo="On Time"/>
                         <AttendanceCard icon={require('./../../assets/icons/Signout.png')} title="Check Out" time={checkOutTime} addInfo="Go Home"/>
                     </View>
-                    <View style={styles.additionalCard}>
+                    <TouchableOpacity style={styles.additionalCard} activeOpacity={0.4} onPress={() => navigation.navigate('History')}>
                         <AttendanceCard icon={require('./../../assets/icons/MiniCalendar.png')} title="Total Days" time={totalDays} addInfo="Working Days"/>
-                    </View>
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.announcementContainer}>
                     <Text style={styles.text1}>Announcement</Text>
