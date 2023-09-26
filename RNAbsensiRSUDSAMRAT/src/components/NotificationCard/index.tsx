@@ -33,11 +33,12 @@ const styles = StyleSheet.create({
         paddingLeft: 12,
         paddingRight: 5,
         paddingVertical: 10,
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        marginBottom: 5
     },
     secContainer:{
         flexDirection: 'row',
-        paddingRight: 50
+        width: 320
     },
     smallImageContainer:{
         width: 41,

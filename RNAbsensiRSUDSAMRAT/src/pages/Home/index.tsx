@@ -13,9 +13,22 @@ const Home = () => {
     const [checkInTime, setCheckInTime] = useState('');
     const [checkOutTime, setCheckOutTime] = useState('');
     const [getNotification, setGetNotification] = useState([]);
+    
+    const getNotif = async () => {
+            try {
+            const response = await axios.get(
+                'http://rsudsamrat.site:3001/api/notification',
+            );
+            console.log("notif di home",response.data.data);
+            setGetNotification(response.data.data);
+            } catch (error) {
+            console.log(error);
+            }
+    };
 
     useEffect(() => {
         socketService.initializeSocket();
+        getNotif();
     }, []);
 
     useEffect(() => {
