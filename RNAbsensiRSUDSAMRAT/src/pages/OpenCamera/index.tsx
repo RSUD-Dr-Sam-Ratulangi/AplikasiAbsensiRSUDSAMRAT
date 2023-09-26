@@ -40,6 +40,7 @@ const OpenCamera = ({navigation}: any) => {
                 setTakePhotoClicked(false);
             }
         } catch (error) {
+            console.log('can not take photo!');
         }
     }
 

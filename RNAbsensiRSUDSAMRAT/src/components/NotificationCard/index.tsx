@@ -37,6 +37,7 @@ const styles = StyleSheet.create({
     },
     secContainer:{
         flexDirection: 'row',
+        paddingRight: 50
     },
     smallImageContainer:{
         width: 41,
@@ -74,6 +75,6 @@ const styles = StyleSheet.create({
     },
     thirdContainer:{
         alignItems: 'flex-end',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
     },
 })

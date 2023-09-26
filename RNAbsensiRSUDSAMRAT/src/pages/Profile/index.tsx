@@ -1,11 +1,9 @@
-import { StyleSheet, Text, View, Button, Alert, Image, SafeAreaView, ScrollView, TouchableOpacity, Platform } from 'react-native'
+import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TouchableOpacity, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { ProfilePicture, Ilustration7 } from '../../assets/images'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
 import { IconLOgOut } from '../../assets'
-import { useNavigation } from '@react-navigation/native'
-import { PERMISSIONS, check, request, RESULTS } from 'react-native-permissions'
 
 const Profile = ({navigation}: any) => {
     const [picture, setPicture] = useState(ProfilePicture);
@@ -15,8 +13,6 @@ const Profile = ({navigation}: any) => {
     const [agency, setAgency] = useState('Pemerintah Provinsi Sulawesi Utara');
     const [office, setOffice] = useState('RSUD DR Sam Ratulangi Tondano');
     const [appVersion, setAppVersion] = useState('v.1.0.0');
-
-    const newNavigation = useNavigation();
 
     const getUserData = async () => {
         const nik = await AsyncStorage.getItem('nik');

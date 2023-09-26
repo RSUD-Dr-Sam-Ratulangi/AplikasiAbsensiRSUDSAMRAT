@@ -119,7 +119,7 @@ const Home = () => {
                 <Image source={Ilustration1} style={styles.ilustration}/>
                 <View style={styles.header}>
                     <View style={styles.profilePicture}>
-                        <Image source={ProfilePicture} style={{width: 86, height: 86, borderRadius: 43}} />
+                        <Image source={ProfilePicture} style={{width: 86, height: 86, borderRadius: 43, borderWidth: 1, borderColor: '#000f'}} />
                     </View>
                     <View>
                         <Text style={styles.greeting}>Holla,</Text>

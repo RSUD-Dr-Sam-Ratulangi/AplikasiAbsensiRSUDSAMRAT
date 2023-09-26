@@ -1,8 +1,10 @@
-import { Image, StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Alert } from 'react-native'
+import { Image, StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Alert, ActivityIndicator } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import SwipeButton from 'rn-swipe-button'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import RNFetchBlob from 'rn-fetch-blob';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
 
 const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
 
@@ -14,12 +16,14 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
     const [locationLongIn, setLocationLongIn] = useState(-122.4194);
     const [locationLatOut, setLocationLatOut] = useState(37.7749);
     const [locationLongOut, setLocationLongOut] = useState(-122.4194);
-    const [selfieUrlCheckIn, setSelfieUrlCheckIn] = useState('https://rb.gy/fre1l');
-    const [selfieUrlCheckOut, setSelfieUrlCheckOut] = useState('https://rb.gy/fre1l');
+    const [selfieUrlCheckIn, setSelfieUrlCheckIn] = useState();
+    const [selfieUrlCheckOut, setSelfieUrlCheckOut] = useState();
     const [status, setStatus] = useState('CheckIn');
     const [attendanceType, setAttendanceType] = useState(attdType);
     const [attendanceInOrOut, setAttendanceInOrOut] = useState('');
     const [attendanceId, setAttendanceId] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+
 
     const getUserData = async (currentDate) => {
         try {
@@ -67,12 +71,16 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         data.append('scheduleId', `${scheduleId}`);
         data.append('employeeId', `${employeeId}`);
         data.append('attendanceDate', `${attendanceDate}`);
-        data.append('clockIn', `2023-09-04T07:55:00`);
+        data.append('clockIn', `${clock}`);
         data.append('clockOut', '');
         data.append('locationLatIn', `${locationLatIn}`);
         data.append('locationLongIn', `${locationLongIn}`);
-        data.append('selfieCheckInImage', `${selfieUrlCheckIn}`);
         data.append('status', `${status}`);
+        data.append('selfieCheckInImage', {
+            uri: 'file://' + imageData,
+            name: 'selfieCheckIn.jpg',
+            type: 'image/jpeg'
+        });
         data.append('attendanceType', `${attendanceType}`);
         
         try {
@@ -89,18 +97,23 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
             [
                 {text: 'OK', onPress: () => console.log('OK Pressed')},
             ]);
+            navigation.replace('Tabs')
         }
     }
 
-    const checkOut = (attendanceId) => {
+    const checkOut = async (attendanceId) => {
         let url = 'http://rsudsamrat.site:9999/api/v1/dev/attendances/updatePulang';
         let data = new FormData();
 
         data.append('attendanceId', `${attendanceId}`);
-        data.append('clockOut', `2023-09-04T14:05:00`);
+        data.append('clockOut', `${clock}`);
         data.append('locationLatOut', `${locationLatOut}`);
         data.append('locationLongOut', `${locationLongOut}`);
-        data.append('selfieUrlCheckOut', `${selfieUrlCheckOut}`);
+        data.append('selfieCheckOutImage', {
+            uri: 'file://' + imageData,
+            name: 'selfieCheckOut.jpg',
+            type: 'image/jpeg'
+        });
 
         axios.post(url, data, {
             headers: {"Content-Type": "multipart/form-data"}
@@ -114,6 +127,7 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
             [
                 {text: 'OK', onPress: () => console.log('OK Pressed')},
             ]);
+            navigation.replace('Tabs');
         });
     }
 
@@ -133,6 +147,34 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         })
     }
 
+
+    const convertFileToBase64 = async (filePath) => {
+        try {
+        const fileInfo = await RNFetchBlob.fs.stat(filePath);
+        const fileSize = fileInfo.size;
+
+        const resize = await ImageResizer.createResizedImage(
+            filePath,
+            800,
+            600,
+            'JPEG',
+            50
+        )
+
+        const oldSizeKB = (fileSize / 1024).toFixed(2);
+        const newSizeKB = (resize.size / 1024).toFixed(2);
+
+        const newFileData = await RNFetchBlob.fs.readFile(resize.uri, 'base64');
+
+        setSelfieUrlCheckIn(newFileData);
+        setSelfieUrlCheckOut(newFileData);
+        return { base64Data: newFileData, oldFileSize: oldSizeKB, newFileSize: newSizeKB };
+        } catch (error) {
+        console.error('Error converting file to base64:', error);
+        throw error;
+        }
+    };
+
     useEffect(() => {
         const date = String(new Date().getDate()).padStart(2, '0'); 
         const month = String(new Date().getMonth() + 1).padStart(2, '0'); 
@@ -142,18 +184,29 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         const sec = String(new Date().getSeconds()).padStart(2, '0'); 
 
         const getDate =  year + '-' + month + '-' + date;
-        // const getDate = '2023-09-04';
+        // const getDate = '2023-10-04';
+        // setClock('2023-09-27T16:55:44');
         setAttendanceDate(getDate);
-
         setClock(
             year + '-' + month + '-' + date + 'T' + hours + ':' + min + ':' + sec
         );
 
+        // convertFileToBase64(imageData)
+        // .then(({base64Data, oldFileSize, newFileSize}) => {
+        //     console.log('Base64 data:', base64Data);
+        //     console.log('Old File size:', oldFileSize, 'KB');
+        //     console.log('New File size:', newFileSize, 'KB');
+        // })
+        // .catch((error) => {
+        //     console.error('Error:', error);
+        // });
+
         setCheckInOrOut(getDate);
         getUserData(getDate);
-    }, [])
+    }, [imageData])
     
     const afterSwipe = () => {
+        setIsLoading(true)
         if(attendanceInOrOut === 'Swipe to Check-In'){
             checkIn();
         } else if (attendanceInOrOut === 'Swipe to Check-Out') {
@@ -167,6 +220,14 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
 
 return (
     <SafeAreaView style={styles.page}>
+        {isLoading ? (
+            <ActivityIndicator
+                size={'large'}
+                color={'#fff'}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            />
+        ) : (
+            <>
         <Text style={styles.title}>Konfirmasi Foto</Text>
         <View style={styles.photoContainer}>
             <Image 
@@ -183,7 +244,7 @@ return (
             activeOpacity={0.7}
             onPress={()=> {
                 reOpenCamera();
-        }}>
+            }}>
             <Text style={{fontSize: 23, color: '#262D33', fontWeight: '600'}}>Take Again</Text>
         </TouchableOpacity>
         <View style={{width: '75%', marginTop: 20}}>
@@ -197,8 +258,10 @@ return (
                 titleStyles={{fontSize:23, color:'#fff', fontWeight:'600'}}
                 shouldResetAfterSuccess={true}
                 onSwipeSuccess={afterSwipe}
-            />
+                />
         </View>
+        </>
+    )}
     </SafeAreaView>
 )
 }

@@ -58,6 +58,16 @@ const App = () => {
             options={{headerShown: false}}
           />
           <Stack.Screen
+            name='OpenCamera'
+            component={OpenCamera}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name='AttendanceConfirmation'
+            component={AttendanceConfirmation}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
             name='AttendanceDone'
             component={AttendanceDone}
             options={{headerShown: false}}
@@ -66,15 +76,6 @@ const App = () => {
             name='Profile'
             component={Profile}
             options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name='OpenCamera'
-            component={OpenCamera}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name='AttendanceConfirmation'
-            component={AttendanceConfirmation}
           />
         </Stack.Navigator>
       </NavigationContainer>

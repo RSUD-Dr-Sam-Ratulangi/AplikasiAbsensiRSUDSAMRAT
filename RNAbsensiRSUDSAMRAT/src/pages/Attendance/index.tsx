@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert, Platform } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import MapView, { PROVIDER_GOOGLE, Circle } from 'react-native-maps';
+import MapView, { Circle } from 'react-native-maps';
 import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import * as geolib from 'geolib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,8 +25,8 @@ const Attendance = ({navigation}: any) => {
     const circleRadius = 100;
 
     useEffect(() => {
-        setCenterCoordinate({ latitude: 1.3093163807571013, longitude: 124.91624948476151 });//RSUD SAMRAT
-        // setCenterCoordinate({ latitude: 1.3022592741080485, longitude: 124.82832709583698 });//testing area
+        // setCenterCoordinate({ latitude: 1.3093163807571013, longitude: 124.91624948476151 });//RSUD SAMRAT
+        setCenterCoordinate({ latitude: 1.3022592741080485, longitude: 124.82832709583698 });//testing area
         
         const getName = async () => {
             const nik = await AsyncStorage.getItem('nik');
@@ -55,6 +55,8 @@ const Attendance = ({navigation}: any) => {
             setDate(formattedDate);
             
             const attendanceDate = getyear + '-' + getmonth + '-' + getdate;
+            // const attendanceDate = '2023-09-25'
+
             setCurrentDate(attendanceDate);
             const employeeId = await AsyncStorage.getItem('employeeId');
 
@@ -139,17 +141,17 @@ const Attendance = ({navigation}: any) => {
                     setScheduleDone(true)   
                 }
                 if(response.data[0].clockIn !== null && response.data[0].clockOut !== null){
-                    setScheduleDone(false);
-                    Alert.alert(
-                        'Sudah waktunya pulang 🥳',
-                        'Absen hari ini sudah selesai. Terima kasih.',
-                        [
-                            {
-                                text: 'OK',
-                                style: 'default',
-                            },
-                        ],
-                    )
+                    setScheduleDone(true);
+                    // Alert.alert(
+                    //     'Sudah waktunya pulang 🥳',
+                    //     'Absen hari ini sudah selesai. Terima kasih.',
+                    //     [
+                    //         {
+                    //             text: 'OK',
+                    //             style: 'default',
+                    //         },
+                    //     ],
+                    // )
                 }
             }
         })
