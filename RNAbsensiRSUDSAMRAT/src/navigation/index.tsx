@@ -194,7 +194,6 @@ function Tabs({navigation}) {
                             justifyContent: 'center',
                             alignItems: 'center',
                             position: 'relative'
-                            // backgroundColor: '#ff0'
                         }}>
                             <Image 
                                 source={require('./../assets/icons/Notification.png')}

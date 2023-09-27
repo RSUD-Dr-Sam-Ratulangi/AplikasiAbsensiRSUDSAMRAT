@@ -4,6 +4,7 @@ import { ProfilePicture, Ilustration7 } from '../../assets/images'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
 import { IconLOgOut } from '../../assets'
+import PieChart from 'react-native-pie-chart'
 
 const Profile = ({navigation}: any) => {
     const [picture, setPicture] = useState(ProfilePicture);
@@ -13,6 +14,36 @@ const Profile = ({navigation}: any) => {
     const [agency, setAgency] = useState('Pemerintah Provinsi Sulawesi Utara');
     const [office, setOffice] = useState('RSUD DR Sam Ratulangi Tondano');
     const [appVersion, setAppVersion] = useState('v.1.0.0');
+    const [late, setLate] = useState(1);
+    const [onTime, setOnTime] = useState(1);
+    const [totalCheckOut, setTotalCheckOut] = useState(0);
+    const [month, setMonth] = useState('');
+    const [year, setYear] = useState('');
+    const [qualityRate, setQualityRate] = useState(0);
+
+    const widthAndHeight = 150;
+    const series = [late, onTime];
+    const sliceColor = ['#FFEB3B','#4CAF50'];
+
+    const getQualityRate = async () => {
+        const employeeId = await AsyncStorage.getItem('employeeId');
+        const getmonth = String(new Date().getMonth() + 1); 
+        const getyear = String(new Date().getFullYear());
+
+        setMonth(getmonth);
+        setYear(getyear);
+
+        axios.get(`http://rsudsamrat.site:9999/api/v1/dev/attendances/attendance/quality?employeeId=${employeeId}&month=${getmonth}`)
+        .then((result) => {
+            setLate(result.data[0].attendanceStateCount.LATE);
+            setOnTime(result.data[0].attendanceStateCount.ON_TIME);
+            setTotalCheckOut(result.data[0].attendanceStatusCount.CheckOut);
+            const qRate = result.data[0].qualityRate;
+            setQualityRate(qRate.toFixed(2));
+        }).catch((err) => {
+            console.log('error while getting quality rate:', err)
+        });
+    }
 
     const getUserData = async () => {
         const nik = await AsyncStorage.getItem('nik');
@@ -29,7 +60,6 @@ const Profile = ({navigation}: any) => {
     useEffect(() => {
         AsyncStorage.getItem('access_token')
         .then((result) => {
-            console.log('access_token', result);
             if(result){
                 getUserData();
             } else {
@@ -38,6 +68,8 @@ const Profile = ({navigation}: any) => {
         }).catch((err) => {
             console.log('error', err)
         });
+
+        getQualityRate();
     }, [])
 
     const handleLogOut = async () => {
@@ -86,6 +118,23 @@ const Profile = ({navigation}: any) => {
                         <View style={{marginTop: 20}}>
                             <Text style={styles.text}>Bidang</Text>
                             <Text style={styles.text2}>{division}</Text>
+                        </View>
+                    </View>
+                    <Text style={{fontSize: 20, color: '#86869E', fontWeight: '500', alignSelf: 'flex-start'}}>Quality Rate {month}/{year}</Text>
+                    <View style={[styles.secContainer, {flexDirection: 'row'}]}>
+                        <PieChart
+                            widthAndHeight={widthAndHeight}
+                            series={series}
+                            sliceColor={sliceColor}
+                            doughnut={true}
+                            coverRadius={0.45}
+                            coverFill={'#FFF'}
+                        />
+                        <View style={{flex: 1, justifyContent: 'center', marginLeft: 12}}>
+                            <Text style={[styles.text, {color: '#4CAF50'}]}>● On Time : {onTime}</Text>
+                            <Text style={[styles.text, {color: '#FFEB3B'}]}>● Late : {late}</Text>
+                            <Text style={[styles.text, {color: '#030003'}]}>● Total Check Out : {totalCheckOut}</Text>
+                            <Text style={[styles.text, {color: '#030003'}]}>● Quality Rate : {qualityRate} %</Text>
                         </View>
                     </View>
                     <Text style={{fontSize: 20, color: '#86869E', fontWeight: '500', alignSelf: 'flex-start'}}>Pengaturan</Text>
