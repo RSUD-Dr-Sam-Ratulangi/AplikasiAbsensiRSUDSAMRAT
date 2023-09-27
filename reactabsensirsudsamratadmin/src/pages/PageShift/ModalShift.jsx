@@ -164,7 +164,6 @@ const ModalShift = forwardRef((props, ref) => {
       .post('/api/v1/dev/schedule', dataSchedule)
       .then((res) => {
         createSuccess();
-
         console.log(locId);
       })
       .catch((err) => {
