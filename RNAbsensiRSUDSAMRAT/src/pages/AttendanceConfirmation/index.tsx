@@ -16,8 +16,7 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
     const [locationLongIn, setLocationLongIn] = useState(-122.4194);
     const [locationLatOut, setLocationLatOut] = useState(37.7749);
     const [locationLongOut, setLocationLongOut] = useState(-122.4194);
-    const [selfieUrlCheckIn, setSelfieUrlCheckIn] = useState();
-    const [selfieUrlCheckOut, setSelfieUrlCheckOut] = useState();
+    const [imagePath, setImagePath] = useState('');
     const [status, setStatus] = useState('CheckIn');
     const [attendanceType, setAttendanceType] = useState(attdType);
     const [attendanceInOrOut, setAttendanceInOrOut] = useState('');
@@ -77,7 +76,7 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         data.append('locationLongIn', `${locationLongIn}`);
         data.append('status', `${status}`);
         data.append('selfieCheckInImage', {
-            uri: 'file://' + imageData,
+            uri: 'file://' + imagePath,
             name: 'selfieCheckIn.jpg',
             type: 'image/jpeg'
         });
@@ -110,7 +109,7 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         data.append('locationLatOut', `${locationLatOut}`);
         data.append('locationLongOut', `${locationLongOut}`);
         data.append('selfieCheckOutImage', {
-            uri: 'file://' + imageData,
+            uri: 'file://' + imagePath,
             name: 'selfieCheckOut.jpg',
             type: 'image/jpeg'
         });
@@ -164,11 +163,8 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         const oldSizeKB = (fileSize / 1024).toFixed(2);
         const newSizeKB = (resize.size / 1024).toFixed(2);
 
-        const newFileData = await RNFetchBlob.fs.readFile(resize.uri, 'base64');
-
-        setSelfieUrlCheckIn(newFileData);
-        setSelfieUrlCheckOut(newFileData);
-        return { base64Data: newFileData, oldFileSize: oldSizeKB, newFileSize: newSizeKB };
+        setImagePath(resize.uri);
+        return { newPath: resize.uri, oldFileSize: oldSizeKB, newFileSize: newSizeKB };
         } catch (error) {
         console.error('Error converting file to base64:', error);
         throw error;
@@ -191,15 +187,15 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
             year + '-' + month + '-' + date + 'T' + hours + ':' + min + ':' + sec
         );
 
-        // convertFileToBase64(imageData)
-        // .then(({base64Data, oldFileSize, newFileSize}) => {
-        //     console.log('Base64 data:', base64Data);
-        //     console.log('Old File size:', oldFileSize, 'KB');
-        //     console.log('New File size:', newFileSize, 'KB');
-        // })
-        // .catch((error) => {
-        //     console.error('Error:', error);
-        // });
+        convertFileToBase64(imageData)
+        .then(({newPath, oldFileSize, newFileSize}) => {
+            console.log('Image Path:', newPath);
+            console.log('Old File size:', oldFileSize, 'KB');
+            console.log('New File size:', newFileSize, 'KB');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
 
         setCheckInOrOut(getDate);
         getUserData(getDate);
