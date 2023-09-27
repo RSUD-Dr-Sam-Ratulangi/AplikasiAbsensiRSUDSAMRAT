@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TouchableOpacity, Platform } from 'react-native'
+import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TouchableOpacity, Platform, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { ProfilePicture, Ilustration7 } from '../../assets/images'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -20,6 +20,7 @@ const Profile = ({navigation}: any) => {
     const [month, setMonth] = useState('');
     const [year, setYear] = useState('');
     const [qualityRate, setQualityRate] = useState(0);
+    const [qualityRateCondition, setQualityRateCondition] = useState(false);
 
     const widthAndHeight = 150;
     const series = [late, onTime];
@@ -35,11 +36,21 @@ const Profile = ({navigation}: any) => {
 
         axios.get(`http://rsudsamrat.site:9999/api/v1/dev/attendances/attendance/quality?employeeId=${employeeId}&month=${getmonth}`)
         .then((result) => {
+            const qRate = result.data[0].qualityRate;
+            setQualityRate(qRate.toFixed(2));
             setLate(result.data[0].attendanceStateCount.LATE);
             setOnTime(result.data[0].attendanceStateCount.ON_TIME);
             setTotalCheckOut(result.data[0].attendanceStatusCount.CheckOut);
-            const qRate = result.data[0].qualityRate;
-            setQualityRate(qRate.toFixed(2));
+
+            if(qRate < 60){
+                setQualityRateCondition(true);
+                Alert.alert('Quality Rate anda dibawah 60%', 'Silahkan hubungi admin!', 
+                [
+                    {text: 'OK', onPress: () => console.log('OK Pressed')},
+                ]);
+            } else {
+                setQualityRateCondition(false);
+            }
         }).catch((err) => {
             console.log('error while getting quality rate:', err)
         });
@@ -121,7 +132,7 @@ const Profile = ({navigation}: any) => {
                         </View>
                     </View>
                     <Text style={{fontSize: 20, color: '#86869E', fontWeight: '500', alignSelf: 'flex-start'}}>Quality Rate {month}/{year}</Text>
-                    <View style={[styles.secContainer, {flexDirection: 'row'}]}>
+                    <View style={[styles.secContainer, {flexDirection: 'row', backgroundColor: qualityRateCondition ? '#ff0e00' : '#fff'}]}>
                         <PieChart
                             widthAndHeight={widthAndHeight}
                             series={series}
@@ -133,8 +144,8 @@ const Profile = ({navigation}: any) => {
                         <View style={{flex: 1, justifyContent: 'center', marginLeft: 12}}>
                             <Text style={[styles.text, {color: '#4CAF50'}]}>● On Time : {onTime}</Text>
                             <Text style={[styles.text, {color: '#FFEB3B'}]}>● Late : {late}</Text>
-                            <Text style={[styles.text, {color: '#030003'}]}>● Total Check Out : {totalCheckOut}</Text>
-                            <Text style={[styles.text, {color: '#030003'}]}>● Quality Rate : {qualityRate} %</Text>
+                            <Text style={[styles.text, {color: setQualityRateCondition ?'#030003' : '#ffffff' }]}>● Total Check Out : {totalCheckOut}</Text>
+                            <Text style={[styles.text, {color: setQualityRateCondition ?'#030003' : '#ffffff' }]}>● Quality Rate : {qualityRate} %</Text>
                         </View>
                     </View>
                     <Text style={{fontSize: 20, color: '#86869E', fontWeight: '500', alignSelf: 'flex-start'}}>Pengaturan</Text>
