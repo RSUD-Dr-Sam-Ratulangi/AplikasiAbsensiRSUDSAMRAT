@@ -34,11 +34,8 @@ export default function ViewAllSchedule() {
 
   const [schedule, setSchedule] = useState([]);
 
-  // const filteredScheduleData = schedule.filter((sch) =>
-  //   sch.name.toLowerCase().includes(searchTerm.toLowerCase())
-  // );
-
   const navigate = useNavigate();
+  console.log(filteredSchedule);
 
   function filterSchedules(schedules, id, name) {
     setEmployeeSchedule(
@@ -245,24 +242,72 @@ export default function ViewAllSchedule() {
       },
     },
   };
+  const defaultFilter = () => {
+    const uniqueEmployees = schedule.reduce((acc, sch) => {
+      const employees = sch.employees;
 
+      for (const emp of employees) {
+        const existingEmployee = acc.find(
+          (e) => e.employeeId === emp.employeeId
+        );
+
+        if (!existingEmployee) {
+          acc.push(emp);
+        } else {
+          // Update the existing employee with additional properties
+          existingEmployee.role = emp.role;
+          existingEmployee.nik = emp.nik;
+          existingEmployee.name = emp.name;
+        }
+      }
+
+      return acc;
+    }, []);
+
+    setFilteredSchedule(uniqueEmployees);
+  };
   useEffect(() => {
     // Fetch data from API
     api
       .get("/api/v1/dev/schedule")
       .then((res) => {
-        const allEmployees = [];
+        // const allEmployees = [];
+        // const dataSchedule = res.data;
+        // for (const sch of dataSchedule) {
+        //   const employees = sch.employees;
+
+        //   for (const emp of employees) {
+        //     allEmployees.push(emp);
+        //   }
+        // }
+        // Create a Set to store unique employeeIds
         const dataSchedule = res.data;
-        for (const sch of dataSchedule) {
+
+        // Filter out unique employees based on employeeId
+        const uniqueEmployees = dataSchedule.reduce((acc, sch) => {
           const employees = sch.employees;
 
           for (const emp of employees) {
-            allEmployees.push(emp);
+            const existingEmployee = acc.find(
+              (e) => e.employeeId === emp.employeeId
+            );
+
+            if (!existingEmployee) {
+              acc.push(emp);
+            } else {
+              // Update the existing employee with additional properties
+              existingEmployee.role = emp.role;
+              existingEmployee.nik = emp.nik;
+              existingEmployee.name = emp.name;
+            }
           }
-        }
-        setFilteredSchedule(allEmployees);
-        setSchedule(res.data);
-        console.log(res.data);
+
+          return acc;
+        }, []);
+
+        setFilteredSchedule(uniqueEmployees);
+        setSchedule(dataSchedule);
+        // setFilteredSchedule(allEmployees);
 
         // console.log(allEmployees);
       })
@@ -271,34 +316,21 @@ export default function ViewAllSchedule() {
       });
   }, [reloadApi]);
 
-  // useEffect(() => {
-  //   // Fetch data from API
-  //   api
-  //     .get("/api/v1/dev/attendances/attendance/quality?employeeId=25&month=9")
-  //     .then((res) => {
-  //       setQualityRate(res.data);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     });
-  // }, [reloadApi]);
-
   useEffect(() => {
     if (searchTerm === "") {
-      setFilteredSchedule(
-        schedule
-          .filter((schedule) => schedule.employees.length !== 0)
-          .map((schedule) => schedule.employees)
-          .flat()
-      );
+      // setFilteredSchedule(
+      //   schedule
+      //     .filter((schedule) => schedule.employees.length !== 0)
+      //     .map((schedule) => schedule.employees)
+      //     .flat()
+
+      // );
+      defaultFilter();
       return;
     }
-    const results = schedule
-      .map((schedule) => schedule.employees)
-      .flat()
-      .filter((employee) =>
-        employee.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    const results = filteredSchedule.filter((employee) =>
+      employee.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
     setFilteredSchedule(results);
   }, [searchTerm, schedule]);
 
@@ -332,9 +364,7 @@ export default function ViewAllSchedule() {
 
   useEffect(() => {
     if (scheduleTime === "Shift") {
-      setFilteredSchedule(
-        schedule.map((schedule) => schedule.employees).flat()
-      );
+      defaultFilter();
       return;
     }
 
