@@ -85,7 +85,7 @@ const ModalBukti = forwardRef((props, ref) => {
       onClose={closeModal}
       contentStyle={{ borderRadius: '12px', padding: '0', width: '28rem' }}>
       {(close) => (
-        <div className='relative p-6 overflow-hidden'>
+        <div className='relative p-2 overflow-hidden w-full h-full'>
           <div className='flex flex-col items-center gap-4 mt-4 mb-2'>
             <button
               className='absolute block cursor-pointer top-1 right-1'
@@ -111,11 +111,11 @@ const ModalBukti = forwardRef((props, ref) => {
             <span className='text-xl font-bold'>
               {selectedData && selectedData.name}
             </span>
-            <div className='p-3 border-4 rounded-xl border-primary-2'>
+            <div className='p-1 border-4 rounded-xl '>
               <img
                 src={`data:image/png;base64,${imageToDisplay}`}
                 alt='bukti'
-                className='object-cover w-[314px] h-[489px] rounded-lg'
+                className='w-full h-[500px] rounded-lg'
               />
             </div>
           </div>
