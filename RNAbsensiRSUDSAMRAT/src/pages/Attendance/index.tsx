@@ -25,8 +25,8 @@ const Attendance = ({navigation}: any) => {
     const circleRadius = 100;
 
     useEffect(() => {
-        // setCenterCoordinate({ latitude: 1.3093163807571013, longitude: 124.91624948476151 });//RSUD SAMRAT
-        setCenterCoordinate({ latitude: 1.3022592741080485, longitude: 124.82832709583698 });//testing area
+        setCenterCoordinate({ latitude: 1.3093163807571013, longitude: 124.91624948476151 });//RSUD SAMRAT
+        // setCenterCoordinate({ latitude: 1.3022592741080485, longitude: 124.82832709583698 });//testing area
         
         const getName = async () => {
             const nik = await AsyncStorage.getItem('nik');
@@ -54,8 +54,8 @@ const Attendance = ({navigation}: any) => {
             const formattedDate = `${dayOfWeek}, ${date} ${monthName} ${year}`;
             setDate(formattedDate);
             
-            // const attendanceDate = getyear + '-' + getmonth + '-' + getdate;
-            const attendanceDate = '2023-10-24';
+            const attendanceDate = getyear + '-' + getmonth + '-' + getdate;
+            // const attendanceDate = '2023-10-24';
 
             setCurrentDate(attendanceDate);
             const employeeId = await AsyncStorage.getItem('employeeId');

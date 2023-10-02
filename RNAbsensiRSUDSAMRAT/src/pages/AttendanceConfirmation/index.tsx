@@ -239,14 +239,14 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         const min = String(new Date().getMinutes()).padStart(2, '0'); 
         const sec = String(new Date().getSeconds()).padStart(2, '0'); 
 
-        // const getDate =  year + '-' + month + '-' + date;
-        const getDate = '2023-10-22';
+        const getDate =  year + '-' + month + '-' + date;
+        // const getDate = '2023-10-22';
         
-        setClock('2023-10-22T08:03:49');
+        // setClock('2023-10-22T08:03:49');
         setAttendanceDate(getDate);
-        // setClock(
-        //     year + '-' + month + '-' + date + 'T' + hours + ':' + min + ':' + sec
-        // );
+        setClock(
+            year + '-' + month + '-' + date + 'T' + hours + ':' + min + ':' + sec
+        );
 
         setCheckInOrOut(getDate);
         getUserData(getDate);
