@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TouchableOpacity, Platform, Alert } from 'react-native'
+import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TouchableOpacity, Platform, Alert, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { ProfilePicture, Ilustration7 } from '../../assets/images'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -9,8 +9,8 @@ import PieChart from 'react-native-pie-chart'
 const Profile = ({navigation}: any) => {
     const [picture, setPicture] = useState(ProfilePicture);
     const [name, setName] = useState('');
-    const [id, setId] = useState('19740516 199705 1 001');
-    const [division, setDivision] = useState('UPTIRSsss');
+    const [id, setId] = useState('');
+    const [division, setDivision] = useState('');
     const [agency, setAgency] = useState('Pemerintah Provinsi Sulawesi Utara');
     const [office, setOffice] = useState('RSUD DR Sam Ratulangi Tondano');
     const [appVersion, setAppVersion] = useState('v.1.0.0');
@@ -21,6 +21,8 @@ const Profile = ({navigation}: any) => {
     const [year, setYear] = useState('');
     const [qualityRate, setQualityRate] = useState(0);
     const [qualityRateCondition, setQualityRateCondition] = useState(false);
+
+    const [isLoading, setIsLoading] = useState(true);
 
     const widthAndHeight = 150;
     const series = [late, onTime];
@@ -41,6 +43,7 @@ const Profile = ({navigation}: any) => {
             setLate(result.data[0].attendanceStateCount.LATE);
             setOnTime(result.data[0].attendanceStateCount.ON_TIME);
             setTotalCheckOut(result.data[0].attendanceStatusCount.CheckOut);
+            setIsLoading(false);
 
             if(qRate < 60){
                 setQualityRateCondition(true);
@@ -63,6 +66,7 @@ const Profile = ({navigation}: any) => {
                     setName(response.data.name)
                     setId(response.data.nik)
                     setDivision(response.data.role)
+                    setIsLoading(false);
                 }).catch(function(error){
                     console.log('error:', error)
                 })
@@ -73,6 +77,7 @@ const Profile = ({navigation}: any) => {
         .then((result) => {
             if(result){
                 getUserData();
+                getQualityRate();
             } else {
                 handleLogOut();
             }
@@ -80,7 +85,6 @@ const Profile = ({navigation}: any) => {
             console.log('error', err)
         });
 
-        getQualityRate();
     }, [])
 
     const handleLogOut = async () => {
@@ -103,6 +107,12 @@ const Profile = ({navigation}: any) => {
     
     return (
         <SafeAreaView style={styles.container}>
+            {isLoading ? (
+                <ActivityIndicator
+                        size={'large'}
+                        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                />
+            ) : (
             <ScrollView>
                 <View style={styles.headerBg}>
                     <Image source={Ilustration7} style={{height: '100%', width: '100%'}}/>
@@ -159,6 +169,7 @@ const Profile = ({navigation}: any) => {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
+            )}
         </SafeAreaView>
     )
 }

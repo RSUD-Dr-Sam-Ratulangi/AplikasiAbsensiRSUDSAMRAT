@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View, SafeAreaView, TextInput, ScrollView, Dimensions, Alert } from 'react-native';
+import { Image, StyleSheet, Text, View, SafeAreaView, TextInput, ScrollView, Dimensions, Alert, Platform } from 'react-native';
 import React, { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ilustration3, Logo } from '../../assets/images';
@@ -43,7 +43,11 @@ const Login = ({navigation}: any) => {
             storeAccessToken(access_token, nik);
             
             if(access_token){
-                navigation.push('Tabs');
+                if (Platform.OS === 'android'){
+                    navigation.replace('Tabs');
+                } else if (Platform.OS === 'ios'){
+                    navigation.push('Tabs');
+                }
             } else {
                 console.log("No access token found!")
                 Alert.alert(
