@@ -65,68 +65,80 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
     }
 
     const checkIn = async () => {
-        let data = new FormData();
-        const url = 'http://rsudsamrat.site:9999/api/v1/dev/attendances/checkInMasuk';
-        data.append('scheduleId', `${scheduleId}`);
-        data.append('employeeId', `${employeeId}`);
-        data.append('attendanceDate', `${attendanceDate}`);
-        data.append('clockIn', `${clock}`);
-        data.append('clockOut', '');
-        data.append('locationLatIn', `${locationLatIn}`);
-        data.append('locationLongIn', `${locationLongIn}`);
-        data.append('status', `${status}`);
-        data.append('selfieCheckInImage', {
-            uri: 'file://' + imagePath,
-            name: 'selfieCheckIn.jpg',
-            type: 'image/jpeg'
+        await convertFileToBase64(imageData)
+        .then(({newPath}) => {
+            let data = new FormData();
+            const url = 'http://rsudsamrat.site:9999/api/v1/dev/attendances/checkInMasuk';
+            data.append('scheduleId', `${scheduleId}`);
+            data.append('employeeId', `${employeeId}`);
+            data.append('attendanceDate', `${attendanceDate}`);
+            data.append('clockIn', `${clock}`);
+            data.append('clockOut', '');
+            data.append('locationLatIn', `${locationLatIn}`);
+            data.append('locationLongIn', `${locationLongIn}`);
+            data.append('status', `${status}`);
+            data.append('selfieCheckInImage', {
+                uri: 'file://' + newPath,
+                name: 'selfieCheckIn.jpg',
+                type: 'image/jpeg'
+            });
+            data.append('attendanceType', `${attendanceType}`);
+            
+            try {
+                axios.post(url, data,{
+                    headers: {"Content-Type": "multipart/form-data"}
+                })
+                .then(function(response){
+                    console.log('berhasil check in');
+                    navigation.replace('AttendanceDone');
+                })
+            } catch (error) {
+                console.log('error saat check in:', error);
+                Alert.alert('Kendala saat Check In', 'Pastikan anda memiliki jadwal. Jika ada kendala, mohon hubungi admin.', 
+                [
+                    {text: 'OK', onPress: () => console.log('OK Pressed')},
+                ]);
+                navigation.replace('Tabs')
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
         });
-        data.append('attendanceType', `${attendanceType}`);
-        
-        try {
-            await axios.post(url, data,{
-                headers: {"Content-Type": "multipart/form-data"}
-            })
-            .then(function(response){
-                console.log('berhasil check in');
-                navigation.replace('AttendanceDone');
-            })
-        } catch (error) {
-            console.log('error saat check in:', error);
-            Alert.alert('Kendala saat Check In', 'Pastikan anda memiliki jadwal. Jika ada kendala, mohon hubungi admin.', 
-            [
-                {text: 'OK', onPress: () => console.log('OK Pressed')},
-            ]);
-            navigation.replace('Tabs')
-        }
     }
 
     const checkOut = async (attendanceId) => {
-        let url = 'http://rsudsamrat.site:9999/api/v1/dev/attendances/updatePulang';
-        let data = new FormData();
-
-        data.append('attendanceId', `${attendanceId}`);
-        data.append('clockOut', `${clock}`);
-        data.append('locationLatOut', `${locationLatOut}`);
-        data.append('locationLongOut', `${locationLongOut}`);
-        data.append('selfieCheckOutImage', {
-            uri: 'file://' + imagePath,
-            name: 'selfieCheckOut.jpg',
-            type: 'image/jpeg'
-        });
-
-        axios.post(url, data, {
-            headers: {"Content-Type": "multipart/form-data"}
+        await convertFileToBase64(imageData)
+        .then(({newPath}) => {
+            let url = 'http://rsudsamrat.site:9999/api/v1/dev/attendances/updatePulang';
+            let data = new FormData();
+    
+            data.append('attendanceId', `${attendanceId}`);
+            data.append('clockOut', `${clock}`);
+            data.append('locationLatOut', `${locationLatOut}`);
+            data.append('locationLongOut', `${locationLongOut}`);
+            data.append('selfieCheckOutImage', {
+                uri: 'file://' + newPath,
+                name: 'selfieCheckOut.jpg',
+                type: 'image/jpeg'
+            });
+    
+            axios.post(url, data, {
+                headers: {"Content-Type": "multipart/form-data"}
+            })
+            .then((result) => {
+                navigation.replace('AttendanceDone');
+                console.log('berhasil check out')
+            }).catch((err) => {
+                console.log('error saat check out:',err)
+                Alert.alert('Tidak bisa Check Out', 'Pastikan anda Check Out sesuai jadwal. Jika ada kendala, mohon hubungi admin.', 
+                [
+                    {text: 'OK', onPress: () => console.log('OK Pressed')},
+                ]);
+                navigation.replace('Tabs');
+            });
         })
-        .then((result) => {
-            navigation.replace('AttendanceDone');
-            console.log('berhasil check out')
-        }).catch((err) => {
-            console.log('error saat check out:',err)
-            Alert.alert('Tidak bisa Check Out', 'Pastikan anda Check Out sesuai jadwal. Jika ada kendala, mohon hubungi admin.', 
-            [
-                {text: 'OK', onPress: () => console.log('OK Pressed')},
-            ]);
-            navigation.replace('Tabs');
+        .catch((error) => {
+            console.error('Error:', error);
         });
     }
 
@@ -180,22 +192,12 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         const sec = String(new Date().getSeconds()).padStart(2, '0'); 
 
         const getDate =  year + '-' + month + '-' + date;
-        // const getDate = '2023-10-04';
-        // setClock('2023-09-27T16:55:44');
+        // const getDate = '2023-10-06';
+        // setClock('2023-10-06T14:05:00');
         setAttendanceDate(getDate);
         setClock(
             year + '-' + month + '-' + date + 'T' + hours + ':' + min + ':' + sec
         );
-
-        convertFileToBase64(imageData)
-        .then(({newPath, oldFileSize, newFileSize}) => {
-            console.log('Image Path:', newPath);
-            console.log('Old File size:', oldFileSize, 'KB');
-            console.log('New File size:', newFileSize, 'KB');
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
 
         setCheckInOrOut(getDate);
         getUserData(getDate);
