@@ -79,9 +79,9 @@ const Login = ({navigation}: any) => {
 
     return (
         <SafeAreaView style={styles.page}>
+            <Image source={Ilustration3} style={{width: imageWidth, height: imageHeight, position: 'absolute', resizeMode: 'cover'}} />
             <ScrollView>
                 <View style={styles.container}>
-                    <Image source={Ilustration3} style={{width: imageWidth, height: imageHeight, position: 'absolute'}} />
                     <Image source={Logo} style={styles.logo} />
                     <Text style={styles.text}>RSUD DR SAM RATULANGI TONDANO</Text>
                     <Gap height={93}/>
@@ -115,8 +115,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     container:{
-        alignItems: 'center',
-        paddingBottom: '30%'
+        alignItems: 'center'
     },
     logo:{
         height: 115,
