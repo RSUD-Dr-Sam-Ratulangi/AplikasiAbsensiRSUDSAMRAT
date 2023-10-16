@@ -23,6 +23,7 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
   const [name, setName] = useState(data?.name);
   const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
   const [placementID, setPlacementId] = useState(null);
+  const [placementName, setPlacementName] = useState(data?.placement?.name);
   const [placementIdDropdown, setPlacementIdDropdown] = useState([]);
   const [reloadApi, setReloadApi] = useState(false);
 
@@ -78,6 +79,7 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
     if (type === "edit") {
       setName(data?.name);
       setJabatan(data?.role);
+      setPlacementName(data?.placement?.name);
       setAkunData(data);
     }
   }, [data, type]);
@@ -115,8 +117,9 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
     setName(e.target.value);
   };
 
-  const handleOptionClick = (option) => {
-    setPlacementId(option);
+  const handleOptionClick = (id, name) => {
+    setPlacementId(id);
+    setPlacementName(name);
     toggleDropdown();
   };
 
@@ -217,7 +220,7 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
                     className="dropdown-button btn h-12 justify-between w-full  bg-white border  rounded-md shadow-sm border-gray-300  "
                     onClick={toggleDropdown}
                   >
-                    {placementID}
+                    {placementName}
                     <HiChevronDown />
                   </button>
                   {/*dropdown*/}
@@ -227,7 +230,7 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
                       dropdownIsOpen ? "block" : "hidden"
                     } w-full mt-1 p-2 bg-white border border-gray-300 rounded-md shadow-lg transition ease-in-out duration-200 transform ${
                       dropdownIsOpen
-                        ? "opacity-100 scale-y-100"
+                        ? "opacity-100 scale-y-100 max-h-40 overflow-y-auto"
                         : "opacity-0 scale-y-95"
                     }`}
                   >
@@ -235,9 +238,11 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
                       <li
                         key={e.placement_id}
                         className="block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white"
-                        onClick={() => handleOptionClick(e.placement_id)}
+                        onClick={() =>
+                          handleOptionClick(e.placement_id, e.name)
+                        }
                       >
-                        {e.placement_id}
+                        {e.name}
                       </li>
                     ))}
                   </ul>

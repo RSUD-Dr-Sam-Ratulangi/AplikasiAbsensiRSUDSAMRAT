@@ -81,8 +81,8 @@ const ModalAbsen = ({ isOpen, onClose }) => {
     // });
 
     const data = new FormData();
-    data.append("scheduleId", 34);
-    data.append("employeeId", 66);
+    data.append("scheduleId", `${schId}`);
+    data.append("employeeId", `${empId}`);
     data.append("attendanceDate", `${formattedAttendanceDate}`);
     data.append("clockIn", `${formattedClockIn}`);
     data.append("clockOut", "");
