@@ -24,7 +24,7 @@ export default function PageEmployeeSchedule() {
     {
       name: "ID",
       selector: (row) => row.employeeId,
-      width: "50px",
+      width: "80px",
     },
     {
       name: "Name",
@@ -56,7 +56,7 @@ export default function PageEmployeeSchedule() {
     {
       name: "ID",
       selector: (row) => row.employeeId,
-      width: "50px",
+      width: "80px",
     },
     {
       name: "Name",
@@ -248,7 +248,9 @@ export default function PageEmployeeSchedule() {
         </div>
         <div className="mt-3">
           <h1 className="font-bold">Tanpa Jadwal </h1>
-          <p className="text-xs text-slate-500">{schedule.length} Pegawai</p>
+          <p className="text-xs text-slate-500">
+            {searchResults.length} Pegawai
+          </p>
           <div className=" overflow-auto max-h-[29vh]">
             <DataTable
               columns={columns1}
@@ -259,7 +261,9 @@ export default function PageEmployeeSchedule() {
         </div>
         <div className="mt-3">
           <h1 className="font-bold">Dengan Jadwal </h1>
-          <p className="text-xs text-slate-500">{schedule.length} Pegawai</p>
+          <p className="text-xs text-slate-500">
+            {searchResults2.length} Pegawai
+          </p>
           <div className=" overflow-auto max-h-[29vh]">
             <DataTable
               columns={columns2}
