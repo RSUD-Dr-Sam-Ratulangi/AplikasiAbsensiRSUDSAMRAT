@@ -72,20 +72,23 @@ const ModalAbsen = ({ isOpen, onClose }) => {
     console.log(selectedFile.name);
   };
 
-  const handleClockInRequest = () => {
-    // Get current date and time
+  const handleClockInRequest = async () => {
     const now = new Date();
 
-    // Set the target date to September 25, 2023
-    const targetDate = new Date(); // Note: Months are 0-based, so 8 represents September
+    const targetDate = new Date(); 
 
-    // Format the attendanceDate in "YYYY-MM-DD" format
+
     const formattedAttendanceDate = `${targetDate.getFullYear()}-${(
       targetDate.getMonth() + 1
     )
       .toString()
       .padStart(2, "0")}-${targetDate.getDate().toString().padStart(2, "0")}`;
 
+<<<<<<< HEAD
+    const formattedClockIn = `${formattedAttendanceDate}T${now
+      .toLocaleTimeString([], { hour12: false })
+      .padStart(8, "0")}`;
+=======
     const empData = employeeData.filter((emp) => emp.id === empId);
 
     // Format the clockIn time in "YYYY-MM-DDTHH:mm:ss" format
@@ -99,12 +102,31 @@ const ModalAbsen = ({ isOpen, onClose }) => {
     }
     console.log("emp data", empData);
     const formattedClockIn = `${formattedAttendanceDate}T${clockInTime}`; // Using client local time
+>>>>>>> cbabdb6c016eed8d574e1a718dfe36d71db23a5b
 
     const data = new FormData();
     data.append("scheduleId", schId);
     data.append("employeeId", empId);
     data.append("attendanceDate", formattedAttendanceDate);
     data.append("clockIn", formattedClockIn);
+<<<<<<< HEAD
+    data.append("clockOut", '');
+    data.append("locationLatIn", '37.7749');
+    data.append("locationLongIn", '-122.4194');
+    data.append("status", "CheckIn");
+    data.append("attendanceType", "WFO");
+    data.append("selfieCheckInImage", null);
+    
+    try {
+      const response = await api.post("/api/v1/dev/attendances/checkInMasuk", data, {headers: {"Content-Type": "multipart/form-data"}});
+
+      console.log(response.data)
+    } catch (err) {
+      console.log("error : ", err)
+    }
+
+
+=======
     data.append("clockOut", "");
     data.append("locationLatIn", "37.7749");
     data.append("locationLongIn", "-122.4194");
@@ -138,6 +160,7 @@ const ModalAbsen = ({ isOpen, onClose }) => {
           console.error("Error message:", error.message);
         }
       });
+>>>>>>> cbabdb6c016eed8d574e1a718dfe36d71db23a5b
   };
 
   const handleOptionClick = (id, name) => {
@@ -272,14 +295,14 @@ const ModalAbsen = ({ isOpen, onClose }) => {
 
                 <div>
                   <label
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    for="file_input"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    htmlFor="file_input"
                   >
                     Upload foto
                   </label>
                   <input
                     type="file"
-                    class="block w-full text-sm border border-slate-500 text-gray-500 rounded-md
+                    className="block w-full text-sm border border-slate-500 text-gray-500 rounded-md
                             file:mr-4 file:py-2 file:px-4
                             file:rounded-md file:border-0
                             file:text-sm file:font-semibold

@@ -17,19 +17,24 @@ export default function PageAbsensi() {
   const [endDate, setEndDate] = useState("");
   const [absences, setAbsences] = useState([]);
   const [filteredAbsences, setFilteredAbsences] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress]  = useState(0);
+  // const dispatch = useDispatch();
+  const [searchTerm, setSearchTerm] = useState('');
   const modalBuktiRef = React.useRef();
   const [imgCheckIn, setImgCheckIn] = useState(null);
   const [imgCheckOut, setImgCheckOut] = useState(null);
+  const [clockCheckIn, setClockCheckIn] = useState(null);
+  const [clockCheckOut, setClockCheckOut] = useState(null);
   const [selectedData, setSelectedData] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
 
   const columns = [
-    {
-      name: "No.",
-      selector: (row) => row.employeeId,
-      sortable: true,
-      width: "75px",
-    },
+    // {
+    //   name: 'No.',
+    //   selector: (row) => row.employeeId,
+    //   sortable: true,
+    //   width: '75px'
+    // },
     {
       name: "Nama",
       selector: (row) => row.name,
@@ -47,19 +52,37 @@ export default function PageAbsensi() {
       selector: (row) => row.category,
     },
     {
-      name: "Presensi",
+      name: 'Waktu Datang - Waktu Pulang',
+      selector: (row) => {
+        if (row.clockInTime === null && row.clockOutTime === null) {
+          return 'BELUM ABSEN';
+        } else if (row.clockInTime === null && row.clockOutTime) {
+          return `?? Absen Datang ??`
+        } else if (row.clockInTime && row.clockOutTime === null) {
+          return `${row.clockInTime} - Belum Absen Pulang`;
+        } else {
+          return `${row.clockInTime} - ${row.clockOutTime}`;
+        }
+      }
+    },
+    // {
+    //   name: 'Waktu Datang - Waktu Pulang',
+    //   selector: (row) => `${row.clockInTime}-${row.clockOutTime}`
+    // },
+    {
+      name: 'Presensi',
       cell: (row) => (
         <div
           className={`w-3 rounded-full h-3   ${
-            row.presence === "red"
-              ? "bg-red-600"
-              : row.presence === "green"
-              ? "bg-green-600"
-              : row.presence === "yellow"
-              ? "bg-yellow-600"
-              : row.presence === "blue"
-              ? "bg-blue-600"
-              : "bg-transparent"
+            row.presence === 'Alpha'
+              ? 'bg-red-600'
+              : row.presence === 'OnTime'
+              ? 'bg-green-600'
+              : row.presence === 'Late'
+              ? 'bg-[#ECE028]'
+              : row.presence === 'blue'
+              ? 'bg-blue-600'
+              : 'bg-transparent'
           }`}
         />
       ),
@@ -72,6 +95,8 @@ export default function PageAbsensi() {
           onClick={() => {
             setImgCheckIn(row.selfieCheckIn);
             setImgCheckOut(row.selfieCheckOut);
+            setClockCheckIn(row.clockInTime);
+            setClockCheckOut(row.clockOutTime);
             setSelectedData(row);
             modalBuktiRef.current.open();
             // setImage(row.selfieCheckIn);
@@ -103,14 +128,14 @@ export default function PageAbsensi() {
       };
     });
     const doc = new jsPDF();
-    doc.text("employee schedule", 20, 10);
+    doc.text('Jadwal Pegawai', 20, 10);
     doc.autoTable({
       theme: "grid",
       columns: pdfcolumns.map((col) => ({ ...col, dataKey: col.field })),
       body: data,
     });
-    doc.save("table.pdf");
-    console.log(data);
+    doc.save('table.pdf');
+    console.log('Print',data);
   };
 
   const pdfcolumns = [
@@ -127,6 +152,7 @@ export default function PageAbsensi() {
       //   const response = await apiCheckToken.get('/ping');
       //   console.log(response.data);
       //   if (response.data) {
+      setIsLoading(true)
       try {
         const response = await api.get(
           "/api/v1/dev/attendances/all-with-schedule"
@@ -166,17 +192,17 @@ export default function PageAbsensi() {
           const clockInTime = clockIn ? formatWaktu(clockIn) : null;
           const clockOutTime = clockOut ? formatWaktu(clockOut) : null;
 
-          let statusPenilaian = "red"; // Default: Tidak ada data clock in atau clock out
+          let statusPenilaian = 'Alpha'; // Default: Tidak ada data clock in atau clock out
 
           if (clockInTime && clockOutTime) {
             if (clockInTime <= shiftStartTime && clockOutTime >= shiftEndTime) {
-              statusPenilaian = "green"; // Clock in sebelum start_time dan clock out setelah end_time
+              statusPenilaian = 'OnTime'; // Clock in sebelum start_time dan clock out setelah end_time
             } else if (clockInTime > shiftStartTime) {
-              statusPenilaian = "yellow"; // Clock in setelah start_time
+              statusPenilaian = 'Late'; // Clock in setelah start_time
             }
           } else if (clockInTime) {
             if (clockInTime > shiftStartTime) {
-              statusPenilaian = "yellow"; // Clock in setelah start_time
+              statusPenilaian = 'Late'; // Clock in setelah start_time
             }
           }
 
@@ -211,6 +237,7 @@ export default function PageAbsensi() {
         console.log("----------------------", ExtractData);
 
         setAbsences(ExtractData);
+        setIsLoading(false)
         // Get the current date in 'yyyy-mm-dd' format
         const today = new Date().toISOString().slice(0, 10);
 
@@ -221,8 +248,18 @@ export default function PageAbsensi() {
 
         setFilteredAbsences(filteredExtractData);
       } catch (error) {
+        setIsLoading(false)
         console.log(error);
       }
+      // try {
+      //   const response = await apiCheckToken.get('/ping');
+      //   console.log(response.data);
+      //   if (response.data) {
+      //   }
+      // } catch (error) {
+      //   console.log(error);
+      //   dispatch(expiredToken());
+      // }
     };
     //   } catch (error) {
     //     console.log(error);
@@ -315,10 +352,18 @@ export default function PageAbsensi() {
 
   return (
     <div>
+    {isLoading ? (
+      <div className='flex justify-center items-center h-56'>
+        <span className="loading loading-dots loading-lg"></span>
+      </div>
+    ) : (
+      <div>
       <ModalBukti
         ref={modalBuktiRef}
         imageCheckIn={imgCheckIn}
         imageCheckOut={imgCheckOut}
+        clockInTime={clockCheckIn}
+        clockOutTime={clockCheckOut}
         selectedData={selectedData}
         onClose={() => modalBuktiRef.current.close()}
       />
@@ -355,7 +400,7 @@ export default function PageAbsensi() {
         </div>
         {/* Search Bar */}
         <div className="relative flex items-center w-full">
-          <HiSearch className="absolute left-4" />
+          <HiSearch className="absolute left-0" />
           <input
             type="text"
             placeholder="Cari..."
@@ -376,5 +421,7 @@ export default function PageAbsensi() {
         </div>
       </div>
     </div>
-  );
+    )}
+    </div>
+  )
 }

@@ -26,6 +26,7 @@ export default function PageShift() {
   const [filteredSchedule, setFilteredSchedule] = useState([]);
   const [modalType, setModalType] = useState("location");
   const [selectedSchedule, setSelectedSchedule] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(0);
   const dummyString = "null";
   const modalDelete = useRef(null);
@@ -61,11 +62,11 @@ export default function PageShift() {
     setIsOpen(!isOpen);
   };
   const columns = [
-    // {
-    //   name: "ID",
-    //   selector: (row) => row.scheduleId,
-    //   width: "100px",
-    // },
+    {
+      name: "ID",
+      selector: (row) => row.scheduleId,
+      width: "100px",
+    },
     {
       name: "Date",
       selector: (row) => row.scheduleDate,
@@ -146,9 +147,11 @@ export default function PageShift() {
         setSchedule(res.data);
         setFilteredSchedule(res.data.reverse());
         console.log(res.data);
+        setIsLoading(false);
       })
       .catch((err) => {
         console.log(err);
+        setIsLoading(false)
       });
   };
 
@@ -235,7 +238,13 @@ export default function PageShift() {
   }, [startDate, endDate, schedule]);
 
   return (
-    <div>
+    <>
+    {isLoading ? (
+      <div className='flex justify-center items-center h-56'>
+      <span className="loading loading-dots loading-lg"></span>
+      </div>
+    ) : (
+      <div>
       <ModalShift
         ref={modalShiftRef}
         onClose={fetchData}
@@ -392,5 +401,7 @@ export default function PageShift() {
         </div>
       </div>
     </div>
+    )}
+  </>
   );
 }

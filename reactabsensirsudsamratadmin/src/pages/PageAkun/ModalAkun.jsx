@@ -117,9 +117,15 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
     setName(e.target.value);
   };
 
+<<<<<<< HEAD
+  const handleOptionClick = (option, name) => {
+    setPlacementId(option);
+    setJabatan(name)
+=======
   const handleOptionClick = (id, name) => {
     setPlacementId(id);
     setPlacementName(name);
+>>>>>>> cbabdb6c016eed8d574e1a718dfe36d71db23a5b
     toggleDropdown();
   };
 
@@ -179,7 +185,7 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
       }}
     >
       {(close) => (
-        <div className="p-6 overflow-hidden">
+        <div className="p-6 overflow-hidden h-full">
           {/* <img
             src={modalBg}
             alt="modal-background"
@@ -214,7 +220,7 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
               </div>
               <div className="flex flex-col justify-start gap-1">
                 <h3>Placement ID</h3>
-                <div className="relative inline-block text-left w-full">
+                <div className="relative inline-block text-left w-full h-56 ">
                   <button
                     type="button"
                     className="dropdown-button btn h-12 justify-between w-full  bg-white border  rounded-md shadow-sm border-gray-300  "
@@ -228,19 +234,29 @@ const ModalAkun = forwardRef(({ data, type, onClose }, ref) => {
                   <ul
                     className={`dropdown-content absolute z-10 ${
                       dropdownIsOpen ? "block" : "hidden"
-                    } w-full mt-1 p-2 bg-white border border-gray-300 rounded-md shadow-lg transition ease-in-out duration-200 transform ${
+                    } w-full mt-1 p-2 border bg-white border-gray-300 rounded-md shadow-lg transition ease-in-out duration-200 transform ${
                       dropdownIsOpen
+<<<<<<< HEAD
+                        ? "opacity-100 scale-y-100"
+                        : "opacity-0 scale-y-95" 
+=======
                         ? "opacity-100 scale-y-100 max-h-40 overflow-y-auto"
                         : "opacity-0 scale-y-95"
+>>>>>>> cbabdb6c016eed8d574e1a718dfe36d71db23a5b
                     }`}
                   >
                     {placementIdDropdown.map((e) => (
                       <li
                         key={e.placement_id}
+<<<<<<< HEAD
+                        className="block px-4 py-2 text-sm  text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white"
+                        onClick={() => handleOptionClick(e.placement_id, e.name)}
+=======
                         className="block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white"
                         onClick={() =>
                           handleOptionClick(e.placement_id, e.name)
                         }
+>>>>>>> cbabdb6c016eed8d574e1a718dfe36d71db23a5b
                       >
                         {e.name}
                       </li>
