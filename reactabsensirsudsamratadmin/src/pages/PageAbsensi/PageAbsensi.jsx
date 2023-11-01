@@ -383,7 +383,7 @@ export default function PageAbsensi() {
                 />
               </div>
             </div>
-            <span>Sampai</span>
+            <span className=" mt-5">Sampai</span>
             <div className="w-fit">
               Tanggal:
               <div className="flex items-center justify-center gap-2">

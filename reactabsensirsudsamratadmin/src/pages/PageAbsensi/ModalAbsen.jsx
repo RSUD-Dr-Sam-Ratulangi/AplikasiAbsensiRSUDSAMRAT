@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { api, apiCheckToken } from "../../config/axios";
+import "react-toastify/dist/ReactToastify.css";
+
+import { toast } from "react-toastify";
 
 import bgModal from "../../assets/modal-bg.png";
 import { HiUpload, HiEye, HiEyeOff, HiX, HiChevronDown } from "react-icons/hi";
@@ -18,6 +21,27 @@ const ModalAbsen = ({ isOpen, onClose }) => {
   const [filteredSchedules, setFilteredSchedules] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredNames, setFilteredNames] = useState([]);
+  const dropdownRef = useRef(null);
+
+  const clockInSuccess = () =>
+    toast("Clock-In Success", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "green" },
+    });
+
+  const clockInFailed = (e) =>
+    toast(`${e.response.data}`, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "red" },
+    });
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -60,15 +84,32 @@ const ModalAbsen = ({ isOpen, onClose }) => {
       .toString()
       .padStart(2, "0")}-${targetDate.getDate().toString().padStart(2, "0")}`;
 
+<<<<<<< HEAD
     const formattedClockIn = `${formattedAttendanceDate}T${now
       .toLocaleTimeString([], { hour12: false })
       .padStart(8, "0")}`;
+=======
+    const empData = employeeData.filter((emp) => emp.id === empId);
+
+    // Format the clockIn time in "YYYY-MM-DDTHH:mm:ss" format
+    let clockInTime = "";
+    if (empData[0].shift === "Pagi" || empData[0].shift === "Management") {
+      clockInTime = "08:01:00";
+    } else if (empData[0].shift === "Sore") {
+      clockInTime = "14:01:00";
+    } else if (empData[0].shift === "Malam") {
+      clockInTime = "20:01:00";
+    }
+    console.log("emp data", empData);
+    const formattedClockIn = `${formattedAttendanceDate}T${clockInTime}`; // Using client local time
+>>>>>>> cbabdb6c016eed8d574e1a718dfe36d71db23a5b
 
     const data = new FormData();
     data.append("scheduleId", schId);
     data.append("employeeId", empId);
     data.append("attendanceDate", formattedAttendanceDate);
     data.append("clockIn", formattedClockIn);
+<<<<<<< HEAD
     data.append("clockOut", '');
     data.append("locationLatIn", '37.7749');
     data.append("locationLongIn", '-122.4194');
@@ -85,6 +126,41 @@ const ModalAbsen = ({ isOpen, onClose }) => {
     }
 
 
+=======
+    data.append("clockOut", "");
+    data.append("locationLatIn", "37.7749");
+    data.append("locationLongIn", "-122.4194");
+    data.append("status", "CheckIn");
+    data.append("attendanceType", "WFO");
+    data.append("selfieCheckInImage", selectedFile);
+    console.log(data);
+    api
+      .post("/api/v1/dev/attendances/checkInMasuk", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((res) => {
+        console.log(res);
+        console.log(data);
+        clockInSuccess();
+      })
+      .catch((error) => {
+        clockInFailed(error);
+        console.error("Error fetching data:", error);
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error("Response data:", error.response.data);
+          console.error("Response status:", error.response.status);
+          console.error("Response headers:", error.response.headers);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error("Request data:", error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.error("Error message:", error.message);
+        }
+      });
+>>>>>>> cbabdb6c016eed8d574e1a718dfe36d71db23a5b
   };
 
   const handleOptionClick = (id, name) => {
@@ -107,6 +183,22 @@ const ModalAbsen = ({ isOpen, onClose }) => {
     setSearchTerm(e.target.value);
     setDropdownEmpIsOpen(true);
   };
+
+  const handleClickOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setDropdownEmpIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    // Attach the event listener on component mount
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Detach the event listener on component unmount
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (searchTerm === "") {
@@ -133,21 +225,21 @@ const ModalAbsen = ({ isOpen, onClose }) => {
           (schedule) => schedule.scheduleDate === currentDate
         );
 
-        setSchedule(schData);
-        // const test = schedule;
-        // console.log(test);
+        // setSchedule(schData);
 
-        const extractedEmployees = schedule.reduce((employees, schedule) => {
+        const extractedEmployees = schData.reduce((employees, schedule) => {
           schedule.employees.forEach((employee) => {
-            employees.push({ id: employee.employeeId, name: employee.name });
+            employees.push({
+              id: employee.employeeId,
+              name: employee.name,
+              shift: schedule.shift.name,
+            });
           });
           return employees;
         }, []);
 
         // Set the extracted employee data to the state
         setEmployeeData(extractedEmployees);
-        // const test2 = employeeData;
-        // console.log(test2);
       })
       .catch((err) => {
         console.log(err);
@@ -171,7 +263,7 @@ const ModalAbsen = ({ isOpen, onClose }) => {
             </h3>
             <div className="flex justify-between">
               <div className="grid gap-3">
-                <div className="relative">
+                <div className="relative" ref={dropdownRef}>
                   <input
                     type="text"
                     className="w-64 p-2 border border-gray-300 rounded"
@@ -195,7 +287,7 @@ const ModalAbsen = ({ isOpen, onClose }) => {
                         className="block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white"
                         onClick={() => handleOptionClick(e.id, e.name)}
                       >
-                        {e.name}
+                        {`${e.name} (${e.shift})`}
                       </li>
                     ))}
                   </ul>
@@ -230,14 +322,6 @@ const ModalAbsen = ({ isOpen, onClose }) => {
                 Clock In
               </button>
             </div>
-            {/* <div className="modal-action">
-              <button
-                className="btn bg-[#01A7A3] text-white"
-                onClick={handleTest}
-              >
-                test
-              </button>
-            </div> */}
           </form>
         </div>
       </dialog>
