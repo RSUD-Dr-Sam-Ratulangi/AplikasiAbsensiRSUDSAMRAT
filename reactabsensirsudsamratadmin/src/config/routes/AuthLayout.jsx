@@ -136,7 +136,7 @@ export const AuthLayout = () => {
                 className='absolute top-0 left-0 z-0 w-full h-full overflow-hidden bg-cover'
               />
               <div className='z-10 text-2xl text-white'>
-                <p>Admin Panel Absensi RSUD SAMRAT TONDANO </p>
+                <p>Admin Panel SIMFONI RSUD DR. SAMRATULANGI TONDANO </p>
                 <p>{formatDate(currentDate)}</p>
               </div>
             </div>

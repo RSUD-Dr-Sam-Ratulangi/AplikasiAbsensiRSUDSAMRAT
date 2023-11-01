@@ -62,11 +62,11 @@ export default function PageShift() {
     setIsOpen(!isOpen);
   };
   const columns = [
-    // {
-    //   name: "ID",
-    //   selector: (row) => row.scheduleId,
-    //   width: "100px",
-    // },
+    {
+      name: "ID",
+      selector: (row) => row.scheduleId,
+      width: "100px",
+    },
     {
       name: 'Date',
       selector: (row) => row.scheduleDate

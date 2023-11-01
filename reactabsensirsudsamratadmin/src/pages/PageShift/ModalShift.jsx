@@ -151,6 +151,8 @@ const ModalShift = forwardRef((props, ref) => {
       dataSchedule.shiftId = 3;
     } else if (scheduleTime === 'Management') {
       dataSchedule.shiftId = 4;
+    } else if (scheduleTime === 'no_shift') {
+      dataSchedule.shiftId = 6;
     }
 
     const dataDateRange = {
@@ -165,6 +167,7 @@ const ModalShift = forwardRef((props, ref) => {
       .then((res) => {
         createSuccess();
         console.log(locId);
+        window.location.reload();
       })
       .catch((err) => {
         createFailed();
@@ -391,6 +394,11 @@ const ModalShift = forwardRef((props, ref) => {
                         className='block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white'
                         onClick={() => handleOptionClick('Management')}>
                         Management
+                      </li>
+                      <li
+                        className='block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white'
+                        onClick={() => handleOptionClick('no_shift')}>
+                        No Shift
                       </li>
                     </ul>
                   </div>

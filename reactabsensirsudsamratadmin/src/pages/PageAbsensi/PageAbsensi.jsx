@@ -1,19 +1,20 @@
-import React from 'react';
-import { HiSearch, HiOutlineEye } from 'react-icons/hi';
-import DataTable from 'react-data-table-component';
-import ModalBukti from './ModalBukti';
-import { useState, useEffect } from 'react';
+import React from "react";
+import { HiSearch, HiOutlineEye } from "react-icons/hi";
+import DataTable from "react-data-table-component";
+import ModalBukti from "./ModalBukti";
+import { useState, useEffect } from "react";
 import {
-  api
+  api,
   // apiCheckToken
-} from '../../config/axios';
-import jsPDF from 'jspdf';
+} from "../../config/axios";
+import jsPDF from "jspdf";
 // import { useDispatch } from 'react-redux';
 // import { expiredToken } from '../../config/authState/authSlice';
+import DropdownButton from "./DropdownAbsensi";
 
 export default function PageAbsensi() {
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [absences, setAbsences] = useState([]);
   const [filteredAbsences, setFilteredAbsences] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,20 +36,20 @@ export default function PageAbsensi() {
     //   width: '75px'
     // },
     {
-      name: 'Nama',
-      selector: (row) => row.name
+      name: "Nama",
+      selector: (row) => row.name,
     },
     {
-      name: 'Waktu',
-      selector: (row) => row.time
+      name: "Waktu",
+      selector: (row) => row.time,
     },
     {
-      name: 'Sif',
-      selector: (row) => row.shift
+      name: "Sif",
+      selector: (row) => row.shift,
     },
     {
-      name: 'Kategori',
-      selector: (row) => row.category
+      name: "Kategori",
+      selector: (row) => row.category,
     },
     {
       name: 'Waktu Datang - Waktu Pulang',
@@ -84,13 +85,13 @@ export default function PageAbsensi() {
               : 'bg-transparent'
           }`}
         />
-      )
+      ),
     },
     {
-      name: 'Bukti',
+      name: "Bukti",
       cell: (row) => (
         <button
-          type='button'
+          type="button"
           onClick={() => {
             setImgCheckIn(row.selfieCheckIn);
             setImgCheckOut(row.selfieCheckOut);
@@ -100,19 +101,20 @@ export default function PageAbsensi() {
             modalBuktiRef.current.open();
             // setImage(row.selfieCheckIn);
           }}
-          className='text-white btn btn-sm bg-primary-2 hover:bg-primary-3'>
+          className="text-white btn btn-sm bg-primary-2 hover:bg-primary-3"
+        >
           <HiOutlineEye />
         </button>
-      )
-    }
+      ),
+    },
   ];
 
   const customStyles = {
     headCells: {
       style: {
-        fontWeight: 'bold'
-      }
-    }
+        fontWeight: "bold",
+      },
+    },
   };
 
   const generatePDF = () => {
@@ -122,26 +124,26 @@ export default function PageAbsensi() {
         waktu: abs?.time,
         sif: abs?.shift,
         kategori: abs?.category,
-        presensi: abs?.presence
+        presensi: abs?.presence,
       };
     });
     const doc = new jsPDF();
     doc.text('Jadwal Pegawai', 20, 10);
     doc.autoTable({
-      theme: 'grid',
+      theme: "grid",
       columns: pdfcolumns.map((col) => ({ ...col, dataKey: col.field })),
-      body: data
+      body: data,
     });
     doc.save('table.pdf');
     console.log('Print',data);
   };
 
   const pdfcolumns = [
-    { title: 'Name', field: 'name' },
-    { title: 'Waktu', field: 'waktu' },
-    { title: 'Sif', field: 'sif' },
-    { title: 'Kategori', field: 'kategori' },
-    { title: 'Presensi', field: 'presensi' }
+    { title: "Name", field: "name" },
+    { title: "Waktu", field: "waktu" },
+    { title: "Sif", field: "sif" },
+    { title: "Kategori", field: "kategori" },
+    { title: "Presensi", field: "presensi" },
   ];
 
   useEffect(() => {
@@ -153,11 +155,11 @@ export default function PageAbsensi() {
       setIsLoading(true)
       try {
         const response = await api.get(
-          '/api/v1/dev/attendances/all-with-schedule'
+          "/api/v1/dev/attendances/all-with-schedule"
         );
         const data = response.data;
 
-        console.log('data', data);
+        console.log("data", data);
 
         const ExtractData = data.map((attendance, index) => {
           const shiftStartTime = attendance.shift.start_time;
@@ -180,12 +182,12 @@ export default function PageAbsensi() {
 
           const formatWaktu = (waktu) => {
             const options = {
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-              hour12: false
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
             };
-            return waktu.toLocaleTimeString('en-US', options);
+            return waktu.toLocaleTimeString("en-US", options);
           };
           const clockInTime = clockIn ? formatWaktu(clockIn) : null;
           const clockOutTime = clockOut ? formatWaktu(clockOut) : null;
@@ -206,7 +208,7 @@ export default function PageAbsensi() {
 
           const employeeNamesString = attendance.attendances
             .map((attendance) => attendance.employee.name)
-            .join(', ')
+            .join(", ")
             .replace(
               /\w\S*/g,
               (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
@@ -229,10 +231,10 @@ export default function PageAbsensi() {
             time: attendance.scheduleDate,
             shift: attendance.shift.name,
             selfieCheckIn: selfieCheckIn,
-            selfieCheckOut: selfieCheckOut
+            selfieCheckOut: selfieCheckOut,
           };
         });
-        console.log('----------------------', ExtractData);
+        console.log("----------------------", ExtractData);
 
         setAbsences(ExtractData);
         setIsLoading(false)
@@ -269,15 +271,15 @@ export default function PageAbsensi() {
   }, []);
 
   useEffect(() => {
-    if (searchTerm === '' && (startDate === '' || endDate === '')) {
+    if (searchTerm === "" && (startDate === "" || endDate === "")) {
       const results = absences.filter((abs) => {
-        if (searchTerm === '') {
+        if (searchTerm === "") {
           return true;
         }
         return null;
       });
       setFilteredAbsences(results);
-    } else if (searchTerm !== '') {
+    } else if (searchTerm !== "") {
       const results = absences.filter((abs) => {
         console.log(abs, searchTerm);
         if (
@@ -289,18 +291,18 @@ export default function PageAbsensi() {
         return null;
       });
       setFilteredAbsences(results);
-    } else if (searchTerm === '' && (startDate !== '' || endDate !== '')) {
+    } else if (searchTerm === "" && (startDate !== "" || endDate !== "")) {
       if (startDate > endDate) {
-        alert('Tanggal awal tidak boleh lebih besar dari tanggal akhir');
+        alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir");
         return;
       }
-      const startDateFormatted = startDate.split('-').join('-');
-      const endDateFormatted = endDate.split('-').join('-');
+      const startDateFormatted = startDate.split("-").join("-");
+      const endDateFormatted = endDate.split("-").join("-");
 
       console.log(startDateFormatted, endDateFormatted);
 
       if (startDateFormatted > endDateFormatted) {
-        alert('Tanggal awal tidak boleh lebih besar dari tanggal akhir');
+        alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir");
         return;
       }
 
@@ -316,19 +318,19 @@ export default function PageAbsensi() {
         })
       );
     }
-    if (searchTerm !== '' && (startDate !== '' || endDate !== '')) {
-      console.log('filteredAbsences', filteredAbsences);
+    if (searchTerm !== "" && (startDate !== "" || endDate !== "")) {
+      console.log("filteredAbsences", filteredAbsences);
       if (startDate > endDate) {
-        alert('Tanggal awal tidak boleh lebih besar dari tanggal akhir');
+        alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir");
         return;
       }
-      const startDateFormatted = startDate.split('-').join('-');
-      const endDateFormatted = endDate.split('-').join('-');
+      const startDateFormatted = startDate.split("-").join("-");
+      const endDateFormatted = endDate.split("-").join("-");
 
       console.log(startDateFormatted, endDateFormatted);
 
       if (startDateFormatted > endDateFormatted) {
-        alert('Tanggal awal tidak boleh lebih besar dari tanggal akhir');
+        alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir");
         return;
       }
 
@@ -366,56 +368,51 @@ export default function PageAbsensi() {
         onClose={() => modalBuktiRef.current.close()}
       />
 
-      <h1 className='text-xl font-medium'>Absensi</h1>
-      <div className='flex flex-col gap-3'>
-        <div className='flex items-end justify-end gap-3'>
-          <div className='flex items-center justify-center gap-3'>
-            <div className='w-fit'>
+      <h1 className="text-xl font-medium">Absensi</h1>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-end justify-end gap-3">
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-fit">
               Tanggal:
-              <div className='flex items-center justify-center gap-2'>
+              <div className="flex items-center justify-center gap-2">
                 {/* Aug 21, 2021 */}
                 <input
-                  type='date'
-                  className='input input-bordered'
+                  type="date"
+                  className="input input-bordered"
                   onChange={(e) => setStartDate(e.target.value)}
                 />
               </div>
             </div>
             <span>Sampai</span>
-            <div className='w-fit'>
+            <div className="w-fit">
               Tanggal:
-              <div className='flex items-center justify-center gap-2'>
+              <div className="flex items-center justify-center gap-2">
                 {/* Aug 21, 2021 */}
                 <input
-                  type='date'
-                  className='input input-bordered'
+                  type="date"
+                  className="input input-bordered"
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
             </div>
           </div>
-          <button
-            type='button'
-            className='px-10 py-3 font-semibold text-white rounded-md bg-primary-2'
-            onClick={generatePDF}>
-            Print PDF
-          </button>
+          <DropdownButton filteredAbsences={filteredAbsences} />
         </div>
         {/* Search Bar */}
-        <div className='relative flex items-center w-full'>
-          <HiSearch className='absolute left-4' />
+        <div className="relative flex items-center w-full">
+          <HiSearch className="absolute left-0" />
           <input
-            type='text'
-            placeholder='Cari...'
-            className='w-full pl-10 input input-bordered'
+            type="text"
+            placeholder="Cari..."
+            className="w-full pl-10 input input-bordered"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <p className='text-xs text-slate-500'>
+        <p className="text-xs text-slate-500">
           {filteredAbsences.length} Absen
         </p>
-        <div className='overflow-auto max-h-[60vh]'>
+        <div className="overflow-auto max-h-[60vh]">
           <DataTable
             columns={columns}
             data={filteredAbsences}

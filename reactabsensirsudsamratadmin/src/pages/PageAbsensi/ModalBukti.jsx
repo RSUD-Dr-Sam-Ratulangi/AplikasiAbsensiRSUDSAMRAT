@@ -25,12 +25,12 @@ const ModalBukti = forwardRef((props, ref) => {
 
 const getClockToDisplay = () => {
   if(isCheckedIn) {
-    return clockInTime;
+    return <p className='text-green-700 text-lg font-bold'>{clockInTime}</p>;
   } else {
     if(clockOutTime) {
       return clockOutTime
     } else {
-      return 'Belum Absen'
+      return <p className='text-red-400 font-bold'>BELUM ABSEN</p>
     }
   }
 }
@@ -129,7 +129,7 @@ const getClockToDisplay = () => {
                 <img
                   src={`data:image/png;base64,${imageToDisplay}`}
                   alt="bukti"
-                  className="w-full h-[500px] rounded-lg"
+                  className="object-fill w-full h-[500px] rounded-lg"
                 />
               ) : (
                 <div>
