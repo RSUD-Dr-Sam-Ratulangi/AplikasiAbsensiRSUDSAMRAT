@@ -7,23 +7,30 @@ import {
 } from 'react-icons/hi';
 import ModalPengumuman from './ModalPengumuman';
 import axios from 'axios';
+import { apiCheckToken } from '../../config/axios';
 
 export default function PagePengumuman() {
+  const [searchTerm, setSearchTerm] = useState('');
   const [refresh, setRefresh] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState(null);
   const modalPengumumanRef = useRef(null);
 
   const getData = async () => {
-    const result = await axios.get('http://localhost:3001/api/notification');
+    const result = await apiCheckToken.get('/notification');
     setData(result.data.data);
+    setFilteredData(result.data.data);
   };
 
   const handleDelete = async (id) => {
-    await axios
-      .delete(`http://localhost:3001/api/notification/${id}`)
+    await apiCheckToken
+      .delete(`/notification/${id}`)
       .then((res) => {
+        console.log(res.data)
         setRefresh((prev) => !prev);
       })
       .catch((err) => {
@@ -40,6 +47,45 @@ export default function PagePengumuman() {
     getData();
   }, [refresh]);
 
+  useEffect(() => {
+    if (searchTerm === '') {
+      setFilteredData(data);
+      return;
+    }
+    const results = data.filter((data) => {
+      if (data.dataId === searchTerm) {
+        return data;
+      }
+    });
+    setFilteredData(results);
+  }, [data, searchTerm]);
+
+  useEffect(() => {
+    if (startDate === null || endDate === null) {
+      return;
+    }
+
+    const startDateFormatted = startDate.split('-').join('-');
+    const endDateFormatted = endDate.split('-').join('-');
+
+    if (startDate > endDate) {
+      alert('Tanggal awal tidak boleh lebih besar dari tanggal akhir');
+      return;
+    }
+
+    setFilteredData(
+      data.filter((schedule) => {
+        if (
+          schedule.scheduleDate >= startDateFormatted &&
+          schedule.scheduleDate <= endDateFormatted
+        ) {
+          return schedule;
+        }
+        return null;
+      })
+    );
+  }, [startDate, endDate, data]);
+
   return (
     <>
       <ModalPengumuman ref={modalPengumumanRef} setRefresh={setRefresh} />
@@ -47,13 +93,31 @@ export default function PagePengumuman() {
         <h1 className="text-xl font-medium">Pengumuman</h1>
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-end gap-3">
-            <div className="w-fit">
-              Tanggal:
-              <div className="flex items-center justify-center gap-2">
-                <input
-                  type="date"
-                  defaultValue={new Date().toISOString().slice(0, 10)}
-                />
+            <div className="flex justify-center items-center gap-3">
+              <div className="w-fit">
+                Tanggal:
+                <div className="flex justify-center items-center gap-2">
+                  {/* Aug 21, 2021 */}
+                  <input
+                    type="date"
+                    defaultValue={new Date().toISOString().slice(0, 10)}
+                    className="input input-bordered"
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+              </div>
+              <span>Sampai</span>
+              <div className="w-fit">
+                Tanggal:
+                <div className="flex justify-center items-center gap-2">
+                  {/* Aug 21, 2021 */}
+                  <input
+                    type="date"
+                    defaultValue={new Date().toISOString().slice(0, 10)}
+                    className="input input-bordered"
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
             <button
@@ -71,10 +135,11 @@ export default function PagePengumuman() {
               type="text"
               placeholder="Type here"
               className="w-full pl-10 input input-bordered"
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <p className="text-xs text-slate-500">{data.length} Pengumuman</p>
-          {data.map((row, index) => (
+          {filteredData.map((row, index) => (
             <div
               key={index}
               className="flex p-4 border border-slate-300 rounded-xl"

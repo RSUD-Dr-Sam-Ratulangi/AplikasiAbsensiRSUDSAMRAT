@@ -2,10 +2,12 @@ import React, { useState, forwardRef, useEffect } from "react";
 import Popup from "reactjs-popup";
 import { HiOutlineX } from "react-icons/hi";
 import { HiArrowDown, HiChevronDown } from "react-icons/hi";
-import api from "../../config/axios";
+import { api } from "../../config/axios";
 import { MapContainer, TileLayer, useMapEvents, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 delete L.Icon.Default.prototype._getIconUrl;
 
@@ -20,7 +22,7 @@ const ModalShift = forwardRef((props, ref) => {
   const [dateTo, setDateTo] = useState("");
   const [dateSchedule, setDateSchedule] = useState("");
   const [scheduleTime, setscheduleTime] = useState("Shift");
-  const [locId, setLocId] = useState("Location ID");
+  const [locId, setLocId] = useState("Nama Lokasi");
   const [isOpen, setIsOpen] = useState(false);
   const [markerPosition, setMarkerPosition] = useState({
     lat: null,
@@ -29,6 +31,110 @@ const ModalShift = forwardRef((props, ref) => {
   const [isOpenLocation, setIsOpenLocation] = useState(false);
   const [options, setOptions] = useState([]);
   const [hospitalName, setsHospitalName] = useState("");
+  const [locName, setLocName] = useState("Nama Lokasi");
+  const [scheduleId, setScheduleId] = useState(props.data.scheduleId);
+  const [reloadApi, setReloadApi] = useState(false);
+
+  // const [location, setLocation] = useState("");
+  const [shift, setShift] = useState("");
+  const [date, setDate] = useState("");
+
+  const editSuccess = () =>
+    toast("Schedule berhasil di edit", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "green" },
+    });
+
+  const createSuccess = () =>
+    toast("Schedule berhasil dibuat", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "green" },
+    });
+
+  const editFailed = () =>
+    toast("Eror, Schedule tidak berhasil di edit", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "red" },
+    });
+
+  const createFailed = () =>
+    toast("Eror, Schedule tidak berhasil dibuat", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "red" },
+    });
+
+  const locSuccess = () =>
+    toast("Lokasi berhasil dibuat", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "green" },
+    });
+
+  const locFailed = () =>
+    toast("Eror, lokasi tidak berhasil di buat", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      theme: "light",
+      progressStyle: { background: "red" },
+    });
+
+  useEffect(() => {
+    if (props.type === "Edit") {
+      setDateSchedule(props.data?.scheduleDate);
+      // setLocation(props.data?.role);
+      setscheduleTime(props.data.shift?.name);
+      setScheduleId(props.data.scheduleId);
+    }
+  }, [props.data, props.type, props.scheduleId]);
+
+  const editScheduleData = () => {
+    const dataEdit = {
+      shiftId: null,
+      scheduleDate: dateSchedule,
+    };
+
+    if (scheduleTime === "Pagi") {
+      dataEdit.shiftId = 1;
+    } else if (scheduleTime === "Sore") {
+      dataEdit.shiftId = 2;
+    } else if (scheduleTime === "Malam") {
+      dataEdit.shiftId = 3;
+    } else if (scheduleTime === "Management") {
+      dataEdit.shiftId = 4;
+    }
+
+    api
+      .put(`/api/v1/dev/schedule/schedule_detail/${scheduleId}`, dataEdit)
+      .then((res) => {
+        console.log(res);
+        editSuccess();
+      })
+      .catch((err) => {
+        console.log(err);
+        editFailed();
+      });
+  };
 
   const postScheduleData = () => {
     const dataSchedule = {
@@ -39,10 +145,14 @@ const ModalShift = forwardRef((props, ref) => {
 
     if (scheduleTime === "Pagi") {
       dataSchedule.shiftId = 1;
-    } else if (scheduleTime === "Siang") {
+    } else if (scheduleTime === "Sore") {
       dataSchedule.shiftId = 2;
     } else if (scheduleTime === "Malam") {
       dataSchedule.shiftId = 3;
+    } else if (scheduleTime === "Management") {
+      dataSchedule.shiftId = 4;
+    } else if (scheduleTime === 'no_shift') {
+      dataSchedule.shiftId = 6;
     }
 
     const dataDateRange = {
@@ -55,9 +165,12 @@ const ModalShift = forwardRef((props, ref) => {
     api
       .post("/api/v1/dev/schedule", dataSchedule)
       .then((res) => {
-        console.log(res);
+        createSuccess();
+        console.log(locId);
+        window.location.reload();
       })
       .catch((err) => {
+        createFailed();
         console.log(err);
       });
     api
@@ -72,7 +185,7 @@ const ModalShift = forwardRef((props, ref) => {
 
   const postLocationData = () => {
     const dataLocation = {
-      locationName: hospitalName.toString(),
+      locationName: hospitalName,
       latitude: markerPosition.lat,
       longitude: markerPosition.lng,
     };
@@ -80,9 +193,11 @@ const ModalShift = forwardRef((props, ref) => {
     api
       .post("/api/v1/dev/locations", dataLocation)
       .then((res) => {
+        locSuccess();
         console.log(res);
       })
       .catch((err) => {
+        locFailed();
         console.log(err);
       });
   };
@@ -97,10 +212,11 @@ const ModalShift = forwardRef((props, ref) => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [reloadApi]);
 
   const handleHospitalInput = (e) => {
-    setsHospitalName(e);
+    setsHospitalName(e.target.value);
+    console.log(hospitalName);
   };
 
   const handleOptionClick = (option) => {
@@ -108,8 +224,10 @@ const ModalShift = forwardRef((props, ref) => {
     toggleDropdown();
   };
 
-  const handleLocClick = (option) => {
-    setLocId(option);
+  const handleLocClick = (id, name) => {
+    setLocId(id);
+    setLocName(name);
+    console.log(id, name);
     toggleLocDropdown();
   };
 
@@ -137,7 +255,11 @@ const ModalShift = forwardRef((props, ref) => {
     ref.current.close();
     setMarkerPosition({ lat: null, lng: null });
     setscheduleTime("Shift");
-    setLocId("Hospital ID");
+    setLocName("Nama Lokasi");
+    setDateSchedule("");
+    setIsOpen(false);
+    setIsOpenLocation(false);
+    props.onClose();
   };
 
   function LocationMarker() {
@@ -156,6 +278,11 @@ const ModalShift = forwardRef((props, ref) => {
     );
   }
 
+  const minDate = () => {
+    const today = new Date().toISOString().split("T")[0];
+    return today;
+  };
+
   return (
     <Popup
       ref={ref}
@@ -165,7 +292,7 @@ const ModalShift = forwardRef((props, ref) => {
     >
       {(close) => (
         <div className="relative p-6 overflow-hidden">
-          <div className="flex mb-8 items-center justify-center">
+          <div className="flex items-center justify-center mb-8">
             <button
               className="absolute block cursor-pointer top-1 right-1"
               onClick={close}
@@ -173,7 +300,7 @@ const ModalShift = forwardRef((props, ref) => {
               <HiOutlineX className="text-2xl text-gray-500" />
             </button>
             {props.type === "location" ? (
-              <div className="flex gap-4 mb-2 mt-4 items-center justify-between flex-col">
+              <div className="flex flex-col items-center justify-between gap-4 mt-4 mb-2">
                 <h1>Create Location</h1>
                 <MapContainer
                   center={[1.3089757786697331, 124.91652488708498]}
@@ -187,15 +314,17 @@ const ModalShift = forwardRef((props, ref) => {
                 <input
                   type="text"
                   name="name"
-                  placeholder="Location Name"
+                  placeholder="Nama Lokasi"
                   className="w-full input input-bordered"
                   onChange={handleHospitalInput}
                 />
                 <button
                   onClick={() => {
                     postLocationData();
+                    closeModal();
+                    setReloadApi(!reloadApi);
                   }}
-                  className="text-white btn bg-primary-2 hover:bg-primary-3 w-full"
+                  className="w-full text-white btn bg-primary-2 hover:bg-primary-3"
                 >
                   Create Location
                 </button>
@@ -203,15 +332,15 @@ const ModalShift = forwardRef((props, ref) => {
             ) : (
               <div>
                 {/* create schedule*/}
-                <div className="flex gap-4 mb-2 mt-4 items-center flex-col">
-                  <h1>Create Schedule</h1>
+                <div className="flex flex-col items-center gap-4 mt-4 mb-2">
+                  <h1>{props.type === "Create" ? "Buat" : "Edit"} Schedule </h1>
                   <div className="relative inline-block text-left w-96">
                     <button
                       type="button"
-                      className="dropdown-button btn h-12 justify-between w-full px-4 py-2 text-sm font-medium text-gray-400 bg-white border border-primary-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-2"
+                      className="justify-between w-full h-12 px-4 py-2 text-sm font-medium text-gray-400 bg-white border rounded-md shadow-sm dropdown-button btn border-primary-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-2"
                       onClick={toggleLocDropdown}
                     >
-                      {locId}
+                      {locName}
                       <HiChevronDown />
                     </button>
                     <ul
@@ -227,9 +356,14 @@ const ModalShift = forwardRef((props, ref) => {
                         <li
                           key={option.locationId}
                           className="block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white"
-                          onClick={() => handleLocClick(option.locationId)}
+                          onClick={() =>
+                            handleLocClick(
+                              option.locationId,
+                              option.locationName
+                            )
+                          }
                         >
-                          {option.locationId}
+                          {option.locationName}
                         </li>
                       ))}
                     </ul>
@@ -237,7 +371,7 @@ const ModalShift = forwardRef((props, ref) => {
                   <div className="relative inline-block text-left w-96">
                     <button
                       type="button"
-                      className="dropdown-button btn h-12 justify-between w-full px-4 py-2 text-sm font-medium text-gray-400 bg-white border border-primary-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-2"
+                      className="justify-between w-full h-12 px-4 py-2 text-sm font-medium text-gray-400 bg-white border rounded-md shadow-sm dropdown-button btn border-primary-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-2"
                       onClick={toggleDropdown}
                     >
                       {scheduleTime}
@@ -260,9 +394,9 @@ const ModalShift = forwardRef((props, ref) => {
                       </li>
                       <li
                         className="block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white"
-                        onClick={() => handleOptionClick("Siang")}
+                        onClick={() => handleOptionClick("Sore")}
                       >
-                        Siang
+                        Sore
                       </li>
                       <li
                         className="block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white"
@@ -270,50 +404,62 @@ const ModalShift = forwardRef((props, ref) => {
                       >
                         Malam
                       </li>
+                      <li
+                        className="block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white"
+                        onClick={() => handleOptionClick("Management")}
+                      >
+                        Management
+                      </li>
+                      <li
+                        className='block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white'
+                        onClick={() => handleOptionClick('no_shift')}>
+                        No Shift
+                      </li>
                     </ul>
                   </div>
                   <input
                     type="date"
                     onChange={handleDateChangeSchedule}
+                    defaultValue={dateSchedule}
+                    value={dateSchedule}
+                    min={minDate()}
                     className="w-full text-gray-400 input input-bordered"
                   />
                   {/* create schedule data range*/}
-                  <div className="flex w-96 flex-col items-center gap-2 mb-8">
-                    <h1 className=" self-start">Tanggal</h1>
+                  <div className="flex flex-col items-center gap-2 mb-8 w-96">
+                    <h1 className="self-start ">Tanggal</h1>
                     <button
                       className="absolute block cursor-pointer top-1 right-1"
-                      onClick={close}
+                      onClick={closeModal}
                     >
                       <HiOutlineX className="text-2xl text-gray-500" />
                     </button>
                     <input
                       type="date"
+                      min={minDate()}
                       onChange={handleDateChangeFrom}
                       className="w-full text-gray-400 input input-bordered"
                     />
-                    <HiArrowDown />
-                    <button
-                      className="absolute block cursor-pointer top-1 right-1"
-                      onClick={close}
-                    >
-                      <HiOutlineX className="text-2xl text-gray-500" />
-                    </button>
+
                     <input
                       type="date"
+                      min={minDate()}
                       onChange={handleDateChangeTo}
                       className="w-full text-gray-400 input input-bordered"
                     />
                   </div>
                   <button
                     onClick={() => {
-                      postScheduleData();
-                      console.log(props.schedule);
-                      console.log(scheduleTime);
-                      console.log(dateFrom + dateTo);
+                      if (props.type === "Edit") {
+                        editScheduleData();
+                      } else {
+                        postScheduleData();
+                      }
+                      closeModal();
                     }}
                     className="text-white btn bg-primary-2 hover:bg-primary-3 w-96"
                   >
-                    Create Schedule
+                    {props.type === "Edit" ? "Edit" : "Buat"} Schedule
                   </button>
                 </div>
               </div>

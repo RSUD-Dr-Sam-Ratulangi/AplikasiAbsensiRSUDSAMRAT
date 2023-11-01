@@ -8,6 +8,7 @@ import Ilustration3 from './Ilustration3.png';
 import Ilustration4 from './Ilustration4.png';
 import Ilustration5 from './Ilustration5.png';
 import Ilustration6 from './Ilustration6.png';
+import Ilustration7 from './Ilustration7.png';
 import NotificationSmallImage from './NotificationSmallImage.png';
 
 export {
@@ -21,5 +22,6 @@ export {
     Ilustration4,
     Ilustration5,
     Ilustration6,
+    Ilustration7,
     NotificationSmallImage
 }

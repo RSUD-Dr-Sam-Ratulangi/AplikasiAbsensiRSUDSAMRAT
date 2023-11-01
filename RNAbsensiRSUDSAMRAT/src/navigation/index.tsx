@@ -9,18 +9,36 @@ import {
 } from '../pages';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const Tab = createBottomTabNavigator();
 
-function Tabs() {
-    const [countUnreadNotif, setCountUnreadNotif] = useState(5)
+function Tabs({navigation}) {
+    const [countUnreadNotif, setCountUnreadNotif] = useState(0)
     const [accesToken, setAccessToken] = useState('');
+    const [nik, setNik] = useState('');
 
-    const getToken = async () => {
+    const countNotif = async () => {
+        try {
+            const response = await axios.get(
+                'http://rsudsamrat.site:3001/api/notification',
+            );
+            const totalNotif = response.data.data.length;
+            setCountUnreadNotif(totalNotif);
+            } catch (error) {
+            console.log(error);
+            }
+    };
+
+    const getTokenNik = async () => {
         try {
             const token = await AsyncStorage.getItem('access_token');
+            const nik = await AsyncStorage.getItem('nik');
+            checkToken(token);
+
             if (token !== null) {
                 setAccessToken(token);
+                setNik(nik);
             } else {
                 console.log('Token tidak ditemukan.');
             }
@@ -28,14 +46,34 @@ function Tabs() {
             console.log('Gagal mengambil token:', error);
         }
     };
+
+    const checkToken = async (token) => {
+        axios.get('http://rsudsamrat.site:3001/api/ping',
+        {headers:{
+            'Authorization' : `Bearer ${token}`
+        }})
+        .then(function (response){
+            const responseJSON = {response};
+            const responseMSG = responseJSON.response.data;
+
+            if(responseMSG !== 'pong'){
+                navigation.navigate('Login');
+            }
+        })
+        .catch(function (error){
+            console.log("error ",error.status);
+            navigation.navigate('Login');
+        })
+    }
     
     useEffect(() => {
-        getToken();
+        getTokenNik();
+        countNotif();
     }, [])
     
-    // console.log('Token ditemukan:', accesToken);
     return (
         <Tab.Navigator
+            detachInactiveScreens={false}
             screenOptions={{
                 tabBarShowLabel: false,
                 tabBarStyle:{
@@ -156,7 +194,6 @@ function Tabs() {
                             justifyContent: 'center',
                             alignItems: 'center',
                             position: 'relative'
-                            // backgroundColor: '#ff0'
                         }}>
                             <Image 
                                 source={require('./../assets/icons/Notification.png')}

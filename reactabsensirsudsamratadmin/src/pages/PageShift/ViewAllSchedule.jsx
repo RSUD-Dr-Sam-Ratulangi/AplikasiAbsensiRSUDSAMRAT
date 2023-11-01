@@ -1,31 +1,145 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   HiSearch,
   HiChevronDown,
   HiDownload,
-  HiOutlinePencil,
   HiChevronLeft,
+  HiViewList,
+  HiAnnotation,
 } from "react-icons/hi";
 import DataTable from "react-data-table-component";
-// import api from '../../config/axios';
-
-import api from "../../config/axios";
+import { api } from "../../config/axios";
 import { useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import Popup from "reactjs-popup";
+import autoTable from "jspdf-autotable";
 
 export default function ViewAllSchedule() {
   const [reloadApi, setReloadApi] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [schedulefl, setSchedulefl] = useState("");
+
+  const [filteredSchedule, setFilteredSchedule] = useState([]);
   // const [absences, setAbsences] = useState([]);
   const [scheduleTime, setscheduleTime] = useState("Shift");
+  const [employeeName, setEmployeeName] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [employeeSchedule, setEmployeeSchedule] = useState([]);
+  const [employeeId, setEmployeeId] = useState(0);
+  const [qualityRate, setQualityRate] = useState([]);
+  const modalEmployee = useRef(null);
+  const modalQuality = useRef(null);
 
   const [schedule, setSchedule] = useState([]);
 
-  const filteredScheduleData = schedule.filter((sch) =>
-    sch.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const navigate = useNavigate();
+  // console.log(filteredSchedule);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  function filterSchedules(schedules, id, name) {
+    setEmployeeSchedule(
+      schedules.filter((schedule) => {
+        return schedule.employees.some(
+          (employee) => employee.employeeId === id
+        );
+      })
+    );
+    setEmployeeName(name);
+    setEmployeeId(id);
+  }
+
+  function openScheduleModal(schedules, id, name) {
+    filterSchedules(schedules, id, name);
+    modalEmployee.current.open();
+  }
+
+  function openQualityModal(id, name) {
+    api
+      .get(
+        `/api/v1/dev/attendances/attendance/quality?employeeId=${id}&month=9`
+      )
+      .then((res) => {
+        setQualityRate(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setEmployeeName(name);
+    setEmployeeId(id);
+    modalQuality.current.open();
+  }
+
+  const generatePDF = () => {
+    let data = filteredSchedule.map((employee) => {
+      return {
+        name: employee?.name,
+        bidang: employee?.role,
+        password: employee?.password,
+        nik: employee?.nik,
+      };
+    });
+    const doc = new jsPDF();
+    doc.text("employee schedule", 20, 10);
+    doc.autoTable({
+      theme: "grid",
+      columns: pdfcolumns.map((col) => ({ ...col, dataKey: col.field })),
+      body: data,
+    });
+    doc.save("table.pdf");
+    console.log(data);
+  };
+
+  const handleGeneratePDFSchedule = (schedules, id, name) => {
+    const filteredSchedules = schedules.filter((schedule) => {
+      return schedule.employees.some((employee) => employee.employeeId === id);
+    });
+    generatePDFSchedule(filteredSchedules, name);
+  };
+
+  const generatePDFSchedule = (filteredSchedules, name) => {
+    const doc = new jsPDF();
+    let data = filteredSchedules.map((schedule) => {
+      return {
+        id: schedule?.scheduleId,
+        date: schedule?.scheduleDate,
+        shift: schedule.shift?.name,
+        time: `${schedule.shift.start_time} - ${schedule.shift.end_time}`,
+        location: schedule?.location,
+      };
+    });
+
+    doc.text(`Jadwal ${name}`, 20, 10);
+    doc.autoTable({
+      theme: "grid",
+      columns: pdfschedulecolumns.map((col) => ({
+        ...col,
+        dataKey: col.field,
+      })),
+      body: data,
+    });
+
+    doc.save("table.pdf");
+  };
+
+  const pdfcolumns = [
+    { title: "Name", field: "name" },
+    { title: "Bidang", field: "bidang" },
+    { title: "Password", field: "password" },
+    { title: "NIK", field: "nik", type: "numeric" },
+  ];
+
+  const pdfschedulecolumns = [
+    { title: "ID", field: "id", type: "numeric" },
+    { title: "Date", field: "date" },
+    { title: "Shift", field: "shift" },
+    { title: "Time", field: "time" },
+    { title: "Location", field: "location" },
+  ];
 
   const handleOptionClick = (option) => {
     setscheduleTime(option);
@@ -36,18 +150,34 @@ export default function ViewAllSchedule() {
     setIsOpen(!isOpen);
   };
 
+  const employeeColumns = [
+    {
+      name: "ID",
+      selector: (row) => row.scheduleId,
+      width: "100px",
+    },
+    {
+      name: "Date",
+      selector: (row) => row.scheduleDate,
+    },
+    {
+      name: "Shift",
+      cell: (row) => row.shift.name,
+    },
+    {
+      name: "Time",
+      cell: (row) => `${row.shift.start_time} - ${row.shift.end_time}`,
+    },
+    {
+      name: "Location",
+      cell: (row) => row?.location,
+    },
+  ];
+
   const columns = [
     {
       name: "Nama",
       selector: (row) => row.name,
-    },
-    {
-      name: "Password",
-      selector: (row) => row.password,
-    },
-    {
-      name: "NIK",
-      selector: (row) => row.nik,
     },
     {
       name: "Bidang/Jabatan",
@@ -59,28 +189,55 @@ export default function ViewAllSchedule() {
         <div>
           <button
             type="button"
-            className="mr-2 text-white btn btn-sm bg-primary-2 hover:bg-primary-3"
+            className=" mr-2 btn btn-sm text-white bg-primary-2 hover:bg-primary-3"
+            onClick={() => {
+              openScheduleModal(schedule, row.employeeId, row.name);
+            }}
           >
-            <HiDownload />
+            <HiViewList />
           </button>
           <button
             type="button"
             className=" mr-2 btn btn-sm text-white bg-primary-2 hover:bg-primary-3"
+            onClick={() => {
+              openQualityModal(row.employeeId, row.name);
+            }}
           >
-            <HiOutlinePencil />
+            <HiAnnotation />
           </button>
         </div>
       ),
     },
   ];
 
-  const handleEdit = (id) => {
-    console.log(`Edit button clicked for row with id: ${id}`);
-  };
-
-  const handleDelete = (id) => {
-    console.log(`Delete button clicked for row with id: ${id}`);
-  };
+  const qualityRateColumns = [
+    {
+      name: "ID",
+      selector: (row) => row.employeeId,
+      width: "3rem",
+    },
+    {
+      name: "Nama",
+      selector: (row) => row.employeeName,
+      width: "10rem",
+    },
+    {
+      name: "Month",
+      cell: (row) => row.month,
+    },
+    {
+      name: "Checkout",
+      cell: (row) => row.attendanceStatusCount.CheckOut,
+    },
+    {
+      name: "On Time",
+      cell: (row) => row.attendanceStateCount.ON_TIME,
+    },
+    {
+      name: "Quality Rate",
+      cell: (row) => row.qualityRate,
+    },
+  ];
 
   const customStyles = {
     headCells: {
@@ -90,40 +247,186 @@ export default function ViewAllSchedule() {
     },
   };
 
+  const getUniqueEmployees = (dataSchedule) => {
+    return dataSchedule?.reduce((acc, sch) => {
+      const employees = sch.employees;
+
+      for (const emp of employees) {
+        const existingEmployee = acc.find(
+          (e) => e.employeeId === emp.employeeId
+        );
+
+        if (!existingEmployee) {
+          acc.push(emp);
+        } else {
+          // Update the existing employee with additional properties
+          existingEmployee.role = emp.role;
+          existingEmployee.nik = emp.nik;
+          existingEmployee.name = emp.name;
+        }
+      }
+
+      return acc;
+    }, []);
+  };
+  const defaultFilter = (data) => {
+    const uniqueEmployees = getUniqueEmployees(data);
+
+    setFilteredSchedule(uniqueEmployees);
+  };
   useEffect(() => {
     // Fetch data from API
     api
       .get("/api/v1/dev/schedule")
       .then((res) => {
-        const allEmployees = [];
         const dataSchedule = res.data;
-        for (const sch of dataSchedule) {
-          const employees = sch.employees;
+        // Filter out unique employees based on employeeId
+        const uniqueEmployees = getUniqueEmployees(dataSchedule);
 
-          for (const emp of employees) {
-            allEmployees.push(emp);
-          }
-        }
-        setSchedule(allEmployees);
-        console.log(allEmployees);
+        setFilteredSchedule(uniqueEmployees);
+        setSchedule(dataSchedule);
       })
       .catch((err) => {
         console.log(err);
       });
   }, [reloadApi]);
 
+  useEffect(() => {
+    if (searchTerm === "") {
+      defaultFilter(schedule);
+      return;
+    }
+    const uniqueEmployees = getUniqueEmployees(schedule);
+    const searchWords = searchTerm.toLowerCase().split(" ");
+
+    const results = uniqueEmployees.filter((employee) => {
+      const employeeName = employee.name.toLowerCase();
+
+      // Check if any of the search words match the employee's name
+      return searchWords.some((word) => employeeName.includes(word));
+    });
+
+    setFilteredSchedule(results);
+    console.log(searchTerm);
+  }, [searchTerm, schedule]);
+
+  useEffect(() => {
+    if (startDate === null || endDate === null) {
+      return;
+    }
+
+    const startDateFormatted = startDate.split("-").join("-");
+    const endDateFormatted = endDate.split("-").join("-");
+
+    console.log(startDateFormatted, endDateFormatted);
+
+    if (startDateFormatted > endDateFormatted) {
+      alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir");
+      return;
+    }
+
+    setFilteredSchedule(
+      schedule
+        .filter(
+          (schedule) =>
+            schedule.scheduleDate >= startDateFormatted &&
+            schedule.scheduleDate <= endDateFormatted &&
+            schedule.employees.length !== 0
+        )
+        .map((schedule) => schedule.employees)
+        .flat()
+    );
+  }, [startDate, endDate, schedule]);
+
+  useEffect(() => {
+    if (scheduleTime === "Shift") {
+      defaultFilter(schedule);
+      return;
+    }
+
+    const results = schedule.filter((schedule) => {
+      const startTime = schedule.shift.start_time;
+      let shiftLabel = "";
+
+      if (startTime === "08:00:00") {
+        shiftLabel = "Pagi";
+      } else if (startTime === "14:00:00") {
+        shiftLabel = "Sore";
+      } else if (startTime === "20:00:00") {
+        shiftLabel = "Malam";
+      }
+      if (shiftLabel === scheduleTime) {
+        return schedule;
+      }
+    });
+
+    setFilteredSchedule(results.map((schedule) => schedule.employees).flat());
+  }, [schedule, scheduleTime]);
+
   return (
     <div>
-      <div className="flex items-end justify-between">
-        <button
-          className="btn bg-transparent border-none"
-          onClick={() => navigate(`/shift`)}
-        >
-          <HiChevronLeft />
-          Schedule
-        </button>
+      <Popup
+        ref={modalEmployee}
+        modal
+        contentStyle={{
+          borderRadius: "12px",
+          padding: "2rem",
+          width: "45rem",
+          height: "37rem",
+        }}
+      >
+        <h3>Jadwal {employeeName}</h3>
+
+        <div className=" overflow-auto max-h-[30rem]">
+          <DataTable
+            columns={employeeColumns}
+            data={employeeSchedule}
+            customStyles={customStyles}
+          />
+        </div>
+        <div className="flex justify-end mt-2">
+          <button
+            type="button"
+            className="mr-2 text-white btn btn-sm bg-primary-2 hover:bg-primary-3"
+            onClick={() => {
+              handleGeneratePDFSchedule(schedule, employeeId, employeeName);
+            }}
+          >
+            Download Schedule
+          </button>
+        </div>
+      </Popup>
+      <Popup
+        ref={modalQuality}
+        modal
+        contentStyle={{
+          borderRadius: "12px",
+          padding: "2rem",
+          width: "50rem",
+          height: "37rem",
+        }}
+      >
+        <h3>Quality Rate {employeeName}</h3>
+        <div className=" overflow-auto max-h-[30rem]">
+          <DataTable
+            columns={qualityRateColumns}
+            data={qualityRate}
+            customStyles={customStyles}
+          />
+        </div>
+      </Popup>
+      <button
+        className="btn bg-transparent border-none"
+        onClick={() => navigate(`/shift`)}
+      >
+        <HiChevronLeft />
+        Schedule
+      </button>
+      <div className="flex items-center justify-between">
+        <h1 className=" text-2xl">See All Employee Schedule</h1>
         <button
           type="button"
+          onClick={generatePDF}
           className=" gap-2 px-14 py-3 font-semibold text-white rounded-md bg-primary-2"
         >
           Print PDF
@@ -140,7 +443,7 @@ export default function ViewAllSchedule() {
               placeholder="Cari..."
               className="w-full pl-10 input input-bordered"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearch}
             />
           </div>
           <div className="">
@@ -148,14 +451,14 @@ export default function ViewAllSchedule() {
             <div className="flex justify-center items-center gap-2">
               <input
                 type="date"
-                defaultValue={new Date().toISOString().slice(0, 10)}
                 className="input input-bordered"
+                onChange={(e) => setStartDate(e.target.value)}
               />
-              <p>-</p>
+              <p>Sampai</p>
               <input
                 type="date"
-                defaultValue={new Date().toISOString().slice(0, 10)}
                 className="input input-bordered"
+                onChange={(e) => setEndDate(e.target.value)}
               />
               <div className="relative inline-block text-left w-48">
                 <button
@@ -179,13 +482,13 @@ export default function ViewAllSchedule() {
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
                     onClick={() => handleOptionClick("Pagi")}
                   >
-                    Pagi
+                    Pagi / Management
                   </li>
                   <li
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
-                    onClick={() => handleOptionClick("Siang")}
+                    onClick={() => handleOptionClick("Sore")}
                   >
-                    Siang
+                    Sore
                   </li>
                   <li
                     className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-slate-200 rounded-md"
@@ -201,13 +504,14 @@ export default function ViewAllSchedule() {
           </div>
         </div>
 
-        <p className="text-xs text-slate-500">{schedule.length} sif</p>
-        <div className=" overflow-auto max-h-[60vh]">
+        <p className="text-xs text-slate-500">
+          {filteredSchedule.length} pegawai
+        </p>
+        <div className=" overflow-auto max-h-[60vh]" id="content">
           <DataTable
             columns={columns}
-            data={filteredScheduleData}
+            data={filteredSchedule}
             customStyles={customStyles}
-            onRowClicked={(row) => navigate(`/shift/${row.scheduleId}`)}
           />
         </div>
       </div>

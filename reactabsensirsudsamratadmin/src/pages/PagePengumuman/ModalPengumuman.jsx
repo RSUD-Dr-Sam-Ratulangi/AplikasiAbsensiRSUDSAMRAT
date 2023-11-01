@@ -4,8 +4,9 @@ import modalBg from '../../assets/modal-bg.png';
 import { HiOutlineX } from 'react-icons/hi';
 import io from 'socket.io-client';
 import axios from 'axios';
+import { apiCheckToken } from '../../config/axios';
 
-const socket = io.connect('http://localhost:3001');
+const socket = io.connect('http://rsudsamrat.site:3001');
 
 const ModalPengumuman = forwardRef((props, ref) => {
   const [title, setTitle] = useState('');
@@ -13,8 +14,8 @@ const ModalPengumuman = forwardRef((props, ref) => {
   const [date, setDate] = useState(new Date());
 
   const postToDb = async (data) => {
-    await axios
-      .post('http://localhost:3001/api/notification', data)
+    await apiCheckToken
+      .post('/notification', data)
       .then((res) => {
         props.setRefresh((prev) => !prev);
       })

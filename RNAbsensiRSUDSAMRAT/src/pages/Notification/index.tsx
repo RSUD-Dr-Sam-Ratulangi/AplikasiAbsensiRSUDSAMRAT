@@ -1,11 +1,4 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  SafeAreaView,
-  ScrollView,
-} from 'react-native';
+import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {Ilustration1, Ilustration6} from '../../assets/images';
 import NotificationCard from '../../components/NotificationCard';
@@ -19,7 +12,7 @@ const Notification = () => {
   const getNotif = async () => {
     try {
       const response = await axios.get(
-        'http://192.168.1.8:3001/api/notification',
+        'http://rsudsamrat.site:3001/api/notification',
       );
       console.log(response.data.data);
       setGetNotification(response.data.data);
@@ -27,27 +20,6 @@ const Notification = () => {
       console.log(error);
     }
   };
-
-  // const notification = [
-  //   {
-  //     title: 'Announcement!',
-  //     desc: 'September 1-2 Libur Bersama',
-  //     date: 'Senin, 1 Agu 2023',
-  //     time: '12:15:40',
-  //   },
-  //   {
-  //     title: 'Announcement!',
-  //     desc: 'September 1-2 Libur Bersama',
-  //     date: 'Selasa, 2 Agu 2023',
-  //     time: '11:15:40',
-  //   },
-  //   {
-  //     title: 'Announcement!',
-  //     desc: 'September 1-2 Libur Bersama',
-  //     date: 'Rabu, 3 Agu 2023',
-  //     time: '09:15:40',
-  //   },
-  // ];
 
   const handleNotificationClick = index => {
     if (clickedNotifications.includes(index)) {

@@ -1,14 +1,23 @@
 // utils/axiosConfig.js
 
-import axios from 'axios';
+import axios from "axios";
+import Cookies from "js-cookie";
 
-const api = axios.create({
-  baseURL: 'http://rsudsamrat.site:9999', // Replace this with your API base URL
-  timeout: 10000, // Set a default timeout for requests (in milliseconds)
+export const api = axios.create({
+  baseURL: "http://rsudsamrat.site:9999",
+  timeout: 120000,
   headers: {
-    'Content-Type': 'application/json', // Set a default content type
-    // Add any other default headers you want to include
+    "Content-Type": "application/json",
   },
 });
 
-export default api;
+export const apiLogin = axios.create({
+  baseURL: "http://rsudsamrat.site:3001",
+});
+
+export const apiCheckToken = axios.create({
+  baseURL: "http://rsudsamrat.site:3001/api",
+  headers: {
+    Authorization: `Bearer ${Cookies.get("access_token")}`,
+  },
+});

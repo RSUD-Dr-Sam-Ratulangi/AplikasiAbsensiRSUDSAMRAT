@@ -8,6 +8,7 @@ import IconNotification from './Notification.png';
 import IconSignin from './Signin.png';
 import IconSignout from './Signout.png';
 import MiniCalendar from './MiniCalendar.png';
+import IconLOgOut from './IconLogOut.png';
 
 export {
     IconUser,
@@ -19,5 +20,6 @@ export {
     IconNotification,
     IconSignin,
     IconSignout,
-    MiniCalendar
+    MiniCalendar,
+    IconLOgOut
 };

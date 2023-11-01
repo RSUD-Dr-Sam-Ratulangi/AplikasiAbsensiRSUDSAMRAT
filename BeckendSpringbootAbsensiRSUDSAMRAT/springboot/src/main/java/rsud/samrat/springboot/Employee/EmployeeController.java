@@ -50,12 +50,18 @@ public class EmployeeController {
 
     @GetMapping("/nik/{nik}")
     public ResponseEntity<CreateEmployeeResponseDTO> getEmployeeByNIK(@PathVariable String nik) {
-        CreateEmployeeResponseDTO employeeDTO = employeeService.getEmployeeByNIK(nik);
+        CreateEmployeeResponseDTO employeeDTO = employeeService.getLatestEmployeeByNIK(nik);
         if (employeeDTO != null) {
             return ResponseEntity.ok(employeeDTO);
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> countTotalEmployees() {
+        long totalEmployees = employeeService.countTotalEmployees();
+        return ResponseEntity.ok(totalEmployees);
     }
 
 }

@@ -1,6 +1,7 @@
 package rsud.samrat.springboot.Attendance.DTOs;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
 import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,9 +27,11 @@ public class AttendanceCreateRequestDTO {
     private Double locationLatOut;
     private Double locationLongOut;
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] selfieCheckIn;
 
     @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] selfieCheckOut;
     private AttendanceStatus status;
     private AttendanceType attendanceType;

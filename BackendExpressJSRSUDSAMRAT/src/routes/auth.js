@@ -6,5 +6,6 @@ const RouterAdmin = express.Router();
 
 RouterAdmin.post('/login', ControllerAdmin.login);
 RouterAdmin.post('/register', ControllerAdmin.register);
+RouterAdmin.get('/get-all', ControllerAdmin.getAll);
 
 exports.RouterAdmin = RouterAdmin;
