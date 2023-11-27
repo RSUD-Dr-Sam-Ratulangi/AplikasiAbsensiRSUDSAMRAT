@@ -28,16 +28,16 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         try {
             const employeeId = await AsyncStorage.getItem('employeeId');
             setEmployeeId(employeeId);
+            setCheckInOrOut(currentDate,employeeId);
 
             const getAttendanceId = async (attendanceDate,employeeId) => {
                 await axios.get(`http://rsudsamrat.site:9999/api/v1/dev/attendances/byDateAndEmployee?attendanceDate=${attendanceDate}&employeeId=${employeeId}`)
                 .then(function(response){
                     const attendanceId = response.data[0].attendanceId;
                     setAttendanceId(attendanceId);
-                    console.log('success to get attendanceId:', attendanceId)
                 })
                 .catch(function(error){
-                    console.log('failed to get attendanceId:', error)
+                    console.log(error)
                 })
             }
 
@@ -50,26 +50,25 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
                         schedule.employees.some(employee => employee.employeeId === convertEmployeeId)
                     )
                     .map(schedule => schedule.scheduleId);
-                    console.log('Filtered Schedule ID:', filteredScheduleId[0]);
                     setScheduledID(filteredScheduleId[0]);
                 }).catch((err) => {
-                    console.log('error when access endpoint:', err)
+                    console.log(err)
                 });
             } 
 
             getAttendanceId(currentDate, employeeId);
             getScheduledId(currentDate, employeeId);
         } catch (error) {
-            console.log('error: ', error)
+            console.log(error)
         }
     }
 
     const checkIn = async () => {
-        
         await convertFileToBase64(imageData)
         .then(({newPath}) => {
             let data = new FormData();
             const url = 'http://rsudsamrat.site:9999/api/v1/dev/attendances/checkInMasuk';
+            
             data.append('scheduleId', `${scheduleId}`);
             data.append('employeeId', `${employeeId}`);
             data.append('attendanceDate', `${attendanceDate}`);
@@ -90,27 +89,24 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
                     headers: {"Content-Type": "multipart/form-data"}
                 })
                 .then(function(response){
-                    console.log('berhasil check in');
                     navigation.replace('AttendanceDone');
-                    let shift_id = response.data.shift.shift_id;
-                    if(shift_id = 3){
-                        AsyncStorage.setItem('shift_id', `${shift_id}`)
-                        .then((result) => {
-                            console.log('berhasil menyimpan shift_id');
-                        }).catch((err) => {
-                            console.log('gagal menyimpan shift_id', err);
-                        });
-                    } else {
-                        console.log('belum menyimpan shift_id');
-                    }
+                    // let shift_id = response.data.shift.shift_id;
+                    // if(shift_id = 3){
+                    //     AsyncStorage.setItem('shift_id', `${shift_id}`)
+                    //     .then((result) => {
+                    //         console.log('berhasil menyimpan shift_id');
+                    //     }).catch((err) => {
+                    //         console.log('gagal menyimpan shift_id', err);
+                    //     });
+                    // } else {
+                    //     console.log('belum menyimpan shift_id');
+                    // }
                 })
                 .catch((error) => {
-                    console.log('Error:', error);
                     setIsLoading(false);
                 })
             } catch (error) {
-                console.log('error saat check in:', error);
-                Alert.alert('Kendala saat Check In', 'Pastikan anda memiliki jadwal. Jika ada kendala, mohon hubungi admin.', 
+                Alert.alert('Error', 'Pastikan koneksi internet bagus. Jika masih terdapat kendala, mohon hubungi admin.', 
                 [
                     {text: 'OK', onPress: () => console.log('OK Pressed')},
                 ]);
@@ -118,7 +114,6 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
             }
         })
         .catch((error) => {
-            console.error('Error:', error);
             setIsLoading(false);
         });
     }
@@ -138,71 +133,71 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
                 name: 'selfieCheckOut.jpg',
                 type: 'image/jpeg'
             });
-            console.log('test')
 
-            axios.post(url, data, {
-                headers: {"Content-Type": "multipart/form-data"}
-            })
-            .then((result) => {
-                navigation.replace('AttendanceDone');
-                console.log('berhasil check out')
-            }).catch((err) => {
-                console.log('error saat check out:',err)
-                Alert.alert('Tidak bisa Check Out', 'Pastikan anda Check Out sesuai jadwal. Jika ada kendala, mohon hubungi admin.', 
-                [
-                    {text: 'OK', onPress: () => console.log('OK Pressed')},
-                ]);
+            try {
+                axios.post(url, data, {
+                    headers: {"Content-Type": "multipart/form-data"}
+                })
+                .then((result) => {
+                    navigation.replace('AttendanceDone');
+                }).catch((err) => {
+                    setIsLoading(false);
+                });
+            } catch (error) {
+                Alert.alert('Error', 'Pastikan koneksi internet bagus. Jika masih terdapat kendala, mohon hubungi admin.', 
+                    [
+                        {text: 'OK', onPress: () => console.log('OK Pressed')},
+                    ]);
                 navigation.replace('Tabs');
-            });
+            }
         })
         .catch((error) => {
-            console.error('Error:', error);
+            setIsLoading(false);
         });
 
-        AsyncStorage.removeItem('shift_id')
-        .then((result) => {
-            console.log('berhasil menghapus shift_id');
-        }).catch((err) => {
-            console.log('gagal menghapus shift_id');
-        });
+        // AsyncStorage.removeItem('shift_id')
+        // .then((result) => {
+        //     console.log('berhasil menghapus shift_id');
+        // }).catch((err) => {
+        //     console.log('gagal menghapus shift_id');
+        // });
     }
 
-    const setCheckInOrOut = async (attendanceDate) => {
-        const employeeIdd = await AsyncStorage.getItem('employeeId');
-        const getShift_id = await AsyncStorage.getItem('shift_id');
-        let newDate = attendanceDate;
+    const setCheckInOrOut = async (attendanceDate, id) => {
+        // const getShift_id = await AsyncStorage.getItem('shift_id');
+        // let newDate = attendanceDate;
 
-        if(getShift_id === '3'){
-            console.log('xx:', getShift_id)
-            const date = attendanceDate; 
+        // if(getShift_id === '3'){
+        //     console.log('xx:', getShift_id)
+        //     const date = attendanceDate; 
             
-            const tanggalAwal = new Date(date);
-            tanggalAwal.setDate(tanggalAwal.getDate() - 1);
+        //     const tanggalAwal = new Date(date);
+        //     tanggalAwal.setDate(tanggalAwal.getDate() - 1);
             
-            const tahun = tanggalAwal.getFullYear();
-            const bulan = String(tanggalAwal.getMonth() + 1).padStart(2, '0'); 
-            const tanggal = String(tanggalAwal.getDate()).padStart(2, '0');
+        //     const tahun = tanggalAwal.getFullYear();
+        //     const bulan = String(tanggalAwal.getMonth() + 1).padStart(2, '0'); 
+        //     const tanggal = String(tanggalAwal.getDate()).padStart(2, '0');
             
-            const tanggalBaru = `${tahun}-${bulan}-${tanggal}`;
-            newDate = tanggalBaru;
-        }
-        console.log(newDate)
-        axios.get(`http://rsudsamrat.site:9999/api/v1/dev/attendances/byDateAndEmployee?attendanceDate=${newDate}&employeeId=${employeeIdd}`)
-        .then(function(response){
-            if(response.data === `Employee hasn't taken any attendance on the given date.`){
+        //     const tanggalBaru = `${tahun}-${bulan}-${tanggal}`;
+        //     newDate = tanggalBaru;
+        // }
+        // console.log("newDate",newDate)
+
+        try {
+            const response = await axios.get(`http://rsudsamrat.site:9999/api/v1/dev/attendances/byDateAndEmployee?attendanceDate=${attendanceDate}&employeeId=${id}`);
+
+            if (response.data === "Employee hasn't taken any attendance on the given date.") {
                 setAttendanceInOrOut('Swipe to Check-In');
-                setIsLoading(false);
             } else {
                 const attendanceId = response.data[0].attendanceId;
                 setAttendanceId(attendanceId);
                 setAttendanceInOrOut('Swipe to Check-Out');
-                setIsLoading(false);
             }
-        })
-        .catch((error)=>{
-            console.log('error:',error);
+        } catch (error) {
+            console.log(error);
+        } finally {
             setIsLoading(false);
-        })
+        }
     }
 
 
@@ -225,7 +220,6 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         setImagePath(resize.uri);
         return { newPath: resize.uri, oldFileSize: oldSizeKB, newFileSize: newSizeKB };
         } catch (error) {
-        console.error('Error converting file to base64:', error);
         throw error;
         }
     };
@@ -240,15 +234,12 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
         const sec = String(new Date().getSeconds()).padStart(2, '0'); 
 
         const getDate =  year + '-' + month + '-' + date;
-        // const getDate = '2023-10-22';
-        
-        // setClock('2023-10-22T08:03:49');
+
         setAttendanceDate(getDate);
         setClock(
             year + '-' + month + '-' + date + 'T' + hours + ':' + min + ':' + sec
         );
 
-        setCheckInOrOut(getDate);
         getUserData(getDate);
     }, [imageData])
     
@@ -258,7 +249,6 @@ const AttendanceConfirmation = ({imageData, navigation, attdType}: any) => {
             checkIn();
         } else if (attendanceInOrOut === 'Swipe to Check-Out') {
             checkOut(attendanceId);
-            // checkIn();
         }
     }
     

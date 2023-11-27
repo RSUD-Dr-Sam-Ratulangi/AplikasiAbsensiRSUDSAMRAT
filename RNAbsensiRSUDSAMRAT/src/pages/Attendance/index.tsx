@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert, Platform } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import MapView, { Circle } from 'react-native-maps';
+import MapView, { Polygon } from 'react-native-maps';
 import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import * as geolib from 'geolib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,16 +18,21 @@ const Attendance = ({navigation}: any) => {
     const [userLocation, setUserLocation] = useState(null);
     const [enabledAttendance, setEnabledAttendance] = useState(false);
     const [mapRef, setMapRef] = useState(null);
-    const [centerCoordinate, setCenterCoordinate] = useState();
     const [isButtonDisabled, setIsButtonDisabled] = useState(true);
     const [currentDate, setCurrentDate] = useState('');
-    const [scheduleDone, setScheduleDone] = useState(false);
-    const circleRadius = 100;
+
+    const polygonCoordinates = [
+        {latitude: 1.309076, longitude: 124.915889},
+        {latitude: 1.309002, longitude: 124.916579},
+        {latitude: 1.309382, longitude: 124.917020},
+        {latitude: 1.309939, longitude: 124.917420},
+        {latitude: 1.310158, longitude: 124.916386},
+        {latitude: 1.309595, longitude: 124.916263},
+        {latitude: 1.309586, longitude: 124.916012},
+    ]
 
     useEffect(() => {
-        setCenterCoordinate({ latitude: 1.3093163807571013, longitude: 124.91624948476151 });//RSUD SAMRAT
-        // setCenterCoordinate({ latitude: 1.3022592741080485, longitude: 124.82832709583698 });//testing area
-        
+
         const getName = async () => {
             const nik = await AsyncStorage.getItem('nik');
             await axios.get(`http://rsudsamrat.site:9999/api/v1/dev/employees/nik/${nik}`)
@@ -55,7 +60,6 @@ const Attendance = ({navigation}: any) => {
             setDate(formattedDate);
             
             const attendanceDate = getyear + '-' + getmonth + '-' + getdate;
-            // const attendanceDate = '2023-10-24';
 
             setCurrentDate(attendanceDate);
             const employeeId = await AsyncStorage.getItem('employeeId');
@@ -94,10 +98,10 @@ const Attendance = ({navigation}: any) => {
                         }
                     })
                     .catch((error)=>{
-                        console.log('error:',error);
+                        console.log(error);
                     })
             }).catch((err) => {
-                console.log('error when access endpoint:', err)
+                console.log(err)
             });
         }
         
@@ -106,7 +110,6 @@ const Attendance = ({navigation}: any) => {
                 try {
                     const granted = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
                     if (granted === 'granted') {
-                        console.log('Location permission granted');
                     }
                 } catch (error) {
                     console.error('Error requesting location permission:', error);
@@ -115,11 +118,6 @@ const Attendance = ({navigation}: any) => {
                 const permission = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
                 if (permission === RESULTS.DENIED) {
                     const response = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
-                    if (response === RESULTS.GRANTED) {
-                        console.log('Location permission granted (iOS).');
-                    } else {
-                        console.log('Location permission denied (iOS).');
-                    }
                 }
             }
         };
@@ -130,12 +128,10 @@ const Attendance = ({navigation}: any) => {
     }, [])
 
     const checkForSchedule = async (attendanceDate) => {
-        console.log(attendanceDate)
         const employeeId = await AsyncStorage.getItem('employeeId');
         await axios.get(`http://rsudsamrat.site:9999/api/v1/dev/attendances/byDateAndEmployee?attendanceDate=${attendanceDate}&employeeId=${employeeId}`)
         .then(function(response){
             if(response.data === `Employee hasn't taken any attendance on the given date.`){
-                setScheduleDone(true);
 
                 if(enabledAttendance && attendanceType && time){
                     if (Platform.OS === 'android'){
@@ -157,7 +153,6 @@ const Attendance = ({navigation}: any) => {
                 }
             } else {
                 if(response.data[0].clockIn !== null && response.data[0].clockOut == null){
-                    setScheduleDone(true)
                     if(enabledAttendance && attendanceType){
                         if (Platform.OS === 'android'){
                             navigation.navigate('OpenCamera', {attendanceType});
@@ -166,7 +161,6 @@ const Attendance = ({navigation}: any) => {
                         }
                     }
                 } else if(response.data[0].clockIn !== null && response.data[0].clockOut !== null){
-                    setScheduleDone(false);
                     Alert.alert(
                         'Sudah waktunya pulang 🥳',
                         'Absen hari ini sudah selesai. Terima kasih.',
@@ -181,15 +175,13 @@ const Attendance = ({navigation}: any) => {
             }
         })
         .catch(function(error){
-            console.log('failed to get attendanceId:', error)
+            console.log(error)
         })
     }
 
     useEffect(() => {
-        if (userLocation && geolib.isPointWithinRadius(userLocation, centerCoordinate, circleRadius)) {
-            // Jika lokasi pengguna berada dalam radius circle
+        if (userLocation && geolib.isPointInPolygon(userLocation, polygonCoordinates)){
             setEnabledAttendance(true);
-            console.log('Enabled for absent', enabledAttendance);
         }
     }, [userLocation]);
 
@@ -232,7 +224,7 @@ const Attendance = ({navigation}: any) => {
 
     const handleFocusUserLocation = () => {
         if (userLocation && mapRef) {
-            mapRef.animateCamera({ center: userLocation, zoom: 17 });
+            mapRef.animateCamera({ center: userLocation, zoom: 18 });
         }
     };
 
@@ -249,12 +241,11 @@ const Attendance = ({navigation}: any) => {
                         const { coordinate } = event.nativeEvent;
                         setUserLocation(coordinate);
                     }}>
-                    <Circle
-                        center={centerCoordinate}
-                        radius={circleRadius}
-                        strokeWidth={2}
-                        strokeColor={'rgba(255, 0, 0, 0.6)'}
-                        fillColor={'rgba(255, 0, 0, 0.2)'}
+                    <Polygon
+                    coordinates={polygonCoordinates}
+                    fillColor="rgba(255, 0, 0, 0.2)"
+                    strokeColor="rgba(255, 0, 0, 0.6)"
+                    strokeWidth={2}
                     />
                 </MapView>
                 <TouchableOpacity onPress={handleFocusUserLocation} style={styles.focusButton}>
@@ -267,7 +258,6 @@ const Attendance = ({navigation}: any) => {
                         <View style={styles.inerContainer}>
                             <View>
                                 <Text style={styles.date}>{date}</Text>
-                                <Text style={styles.time}>{time}</Text>
                                 <Text style={styles.name}>{name}</Text>
                             </View>
                             <View style={styles.statusContainer}>
@@ -329,7 +319,7 @@ const styles = StyleSheet.create({
     descContainerBackground:{
         backgroundColor: '#01A7A3', 
         width: 324, 
-        height: 60,
+        height: 45,
         borderRadius: 20,
         position: 'absolute',
         opacity: 0.7
@@ -344,15 +334,10 @@ const styles = StyleSheet.create({
     },
     inerContainer:{
         flexDirection: 'row',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
     },
     date:{
         fontSize: 15,
-        fontWeight: '600',
-        color: '#ffffff'
-    },
-    time:{
-        fontSize: 10,
         fontWeight: '600',
         color: '#ffffff'
     },
@@ -372,7 +357,7 @@ const styles = StyleSheet.create({
     status1:{
         fontSize: 12,
         fontWeight: '600',
-        color: '#ffffff'
+        color: '#ffffff',
     },
     contentContainer:{
         flex: 1,
