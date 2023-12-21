@@ -61,10 +61,10 @@ function Tabs({navigation}) {
             }
         })
         .catch(function (error){
-            console.log("error ",error.status);
+            console.log('error',error.status);
             navigation.navigate('Login');
-        })
-    }
+        });
+    };
     
     useEffect(() => {
         getTokenNik();
