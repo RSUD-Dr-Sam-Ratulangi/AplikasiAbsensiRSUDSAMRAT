@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, Image, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { StyleSheet, Text, View, SafeAreaView, Image, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Ilustration1, ProfilePicture } from '../../assets/images'
 import AttendanceCard from '../../components/AttendanceCard';
@@ -14,6 +14,20 @@ const Home = ({navigation}) => {
     const [checkOutTime, setCheckOutTime] = useState('');
     const [getNotification, setGetNotification] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleRefresh = () => {
+        setRefreshing(true);
+        setIsLoading(true);
+
+        getNik()
+        .then(() => {
+            setRefreshing(false);
+        })
+        .catch(() => {
+            setRefreshing(false);
+        });
+    }
 
     const getNotif = async () => {
             try {
@@ -58,45 +72,49 @@ const Home = ({navigation}) => {
                     const getDate =  year + '-' + month + '-' + date;
                     getScheduleTime(getDate, conEmployeeId);
                 }).catch(function(error){
-                    console.log('error:', error)
+                    console.log(error)
                 })
             }
             getUserData();
         } catch (error) {
-            console.log('Gagal mengambil nik: ', error)
+            console.log(error)
         }
     }
 
     const getScheduleTime = async (attendanceDate, employeeId) => {
-        await axios.get(`http://rsudsamrat.site:9999/api/v1/dev/schedule`)
-        .then((response) => {
-            const convertEmployeeId = parseInt(employeeId);
-            const startTime = response.data.filter(schedule => 
-                schedule.scheduleDate === attendanceDate &&
-                schedule.employees.some(employee => employee.employeeId === convertEmployeeId)
-            )
-            .map(schedule => schedule.shift.start_time);
+        const url = `http://rsudsamrat.site:9999/api/v1/dev/attendances/byDateAndEmployee?attendanceDate=${attendanceDate}&employeeId=${employeeId}`;
+        await axios.get(url)
+        .then(function (response) {
+            const getClockIn = response.data[0].clockIn
+            const getClockOut = response.data[0].clockOut
 
-            const endTime = response.data.filter(schedule => 
-                schedule.scheduleDate === attendanceDate &&
-                schedule.employees.some(employee => employee.employeeId === convertEmployeeId)
-            )
-            .map(schedule => schedule.shift.end_time);
-            setCheckInTime(startTime[0]);
-            setCheckOutTime(endTime[0]);
+            if(getClockIn && getClockIn !== ""){
+                const newClockIn = getClockIn.substring(11, 16);
+                setCheckInTime(newClockIn)
+            } else {
+                setCheckInTime('-')
+            }
+
+            if(getClockOut && getClockOut !== ""){
+                const newClockOut = getClockOut.substring(11, 16);
+                setCheckOutTime(newClockOut)
+            } else {
+                setCheckOutTime('-')
+            }
             setIsLoading(false);
-        }).catch((err) => {
-            console.log('error when access endpoint:', err)
+        })
+        .catch(function (error) {
+            setIsLoading(false);
+            console.log(error);
         });
     }
     
     const setEmployeeId = async (employeeId) => {
         try {
             await AsyncStorage.setItem('employeeId', employeeId);
-            console.log('berhasil menyimpan employee id :', employeeId);
             getData(employeeId);
         } catch (error) {
-            console.log('error:', error);
+            console.log(error);
         }
     }
 
@@ -118,7 +136,7 @@ const Home = ({navigation}) => {
             setTotalDays(numberOfUniqueDates);
         })
         .catch(function (error) {
-            console.log('error:',error);
+            console.log(error);
         });
     }
 
@@ -128,7 +146,14 @@ const Home = ({navigation}) => {
 
     return (
         <SafeAreaView style={styles.page}>
-            <ScrollView>
+            <ScrollView
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                    />
+                }
+            >
                 <Image source={Ilustration1} style={styles.ilustration}/>
                 <View style={styles.header}>
                     <View style={styles.profilePicture}>
@@ -149,8 +174,8 @@ const Home = ({navigation}) => {
                         <>
                             <Text style={styles.text1}>Today Attendance</Text>
                             <View style={styles.cardContainer}>
-                                <AttendanceCard icon={require('./../../assets/icons/Signin.png')} title="Check In" time={checkInTime} addInfo="On Time"/>
-                                <AttendanceCard icon={require('./../../assets/icons/Signout.png')} title="Check Out" time={checkOutTime} addInfo="Go Home"/>
+                                <AttendanceCard icon={require('./../../assets/icons/Signin.png')} title="Check In" time={checkInTime} addInfo="Start Work Today"/>
+                                <AttendanceCard icon={require('./../../assets/icons/Signout.png')} title="Check Out" time={checkOutTime} addInfo="Go Home Today"/>
                             </View>
                             <TouchableOpacity style={styles.additionalCard} activeOpacity={0.8} onPress={() => navigation.navigate('History')}>
                                 <AttendanceCard icon={require('./../../assets/icons/MiniCalendar.png')} title="Total Days" time={totalDays} addInfo="Working Days"/>

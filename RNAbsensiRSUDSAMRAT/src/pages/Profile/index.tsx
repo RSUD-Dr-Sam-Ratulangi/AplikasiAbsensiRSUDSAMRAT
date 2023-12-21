@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TouchableOpacity, Platform, Alert, ActivityIndicator } from 'react-native'
+import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TouchableOpacity, Platform, Alert, ActivityIndicator, RefreshControl } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { ProfilePicture, Ilustration7 } from '../../assets/images'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -13,7 +13,6 @@ const Profile = ({navigation}: any) => {
     const [division, setDivision] = useState('');
     const [agency, setAgency] = useState('Pemerintah Provinsi Sulawesi Utara');
     const [office, setOffice] = useState('RSUD DR Sam Ratulangi Tondano');
-    const [appVersion, setAppVersion] = useState('v.1.0.0');
     const [late, setLate] = useState(1);
     const [onTime, setOnTime] = useState(1);
     const [totalCheckOut, setTotalCheckOut] = useState(0);
@@ -21,12 +20,27 @@ const Profile = ({navigation}: any) => {
     const [year, setYear] = useState('');
     const [qualityRate, setQualityRate] = useState(0);
     const [qualityRateCondition, setQualityRateCondition] = useState(false);
+    const appVersion = 'v.1.2.1';
 
     const [isLoading, setIsLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
     const widthAndHeight = 150;
     const series = [late, onTime];
     const sliceColor = ['#FFEB3B','#4CAF50'];
+
+    const handleRefresh = () => {
+        setRefreshing(true);
+        setIsLoading(true);
+
+        try {
+            getUserData()
+            getQualityRate();
+            setRefreshing(false);
+        } catch (error) {
+            setRefreshing(false);
+        }
+    }
 
     const getQualityRate = async () => {
         const employeeId = await AsyncStorage.getItem('employeeId');
@@ -55,7 +69,7 @@ const Profile = ({navigation}: any) => {
                 setQualityRateCondition(false);
             }
         }).catch((err) => {
-            console.log('error while getting quality rate:', err)
+            console.log(err)
         });
     }
 
@@ -68,7 +82,7 @@ const Profile = ({navigation}: any) => {
                     setDivision(response.data.role)
                     setIsLoading(false);
                 }).catch(function(error){
-                    console.log('error:', error)
+                    console.log(error)
                 })
     }
 
@@ -82,13 +96,13 @@ const Profile = ({navigation}: any) => {
                 handleLogOut();
             }
         }).catch((err) => {
-            console.log('error', err)
+            console.log(err)
         });
 
     }, [])
 
     const handleLogOut = async () => {
-        await AsyncStorage.multiRemove(['nik', 'access_token', 'employeeId'], err => {
+        await AsyncStorage.multiRemove(['access_token', 'employeeId'], err => {
             if(err === null){
                 if (Platform.OS === 'android'){
                     navigation.reset({
@@ -98,7 +112,6 @@ const Profile = ({navigation}: any) => {
                 } else if (Platform.OS === 'ios'){
                     navigation.push('Login')
                 }
-                console.log('Logout from the app!')
             } else {
                 console.log(err)
             }
@@ -113,7 +126,14 @@ const Profile = ({navigation}: any) => {
                         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
                 />
             ) : (
-            <ScrollView>
+            <ScrollView
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                    />
+                }
+            >
                 <View style={styles.headerBg}>
                     <Image source={Ilustration7} style={{height: '100%', width: '100%'}}/>
                     <Text style={styles.pageTitle}>Profile</Text>

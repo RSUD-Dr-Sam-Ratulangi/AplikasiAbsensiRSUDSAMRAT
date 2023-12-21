@@ -9,9 +9,8 @@ const SplashScreen = ({navigation}: any) => {
         try {
             const token = await AsyncStorage.getItem('access_token');
             checkToken(token);
-            console.log('get token:', token)
         } catch (error) {
-            console.log('Gagal mengambil token: ', error)
+            console.log(error)
         }
     }
 
@@ -41,7 +40,7 @@ const SplashScreen = ({navigation}: any) => {
             }
         })
         .catch(function (error){
-            console.log("error ",error.status);
+            console.log(error.status);
             setTimeout(() => {
                 if (Platform.OS === 'android'){
                     navigation.replace('Login');
@@ -82,8 +81,10 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     logo:{
-        height: 127,
-        width: 97,
+        height: 130,
+        width: 130,
+        backgroundColor: '#fff',
+        borderRadius: 65
     },
     text:{
         fontSize: 16,

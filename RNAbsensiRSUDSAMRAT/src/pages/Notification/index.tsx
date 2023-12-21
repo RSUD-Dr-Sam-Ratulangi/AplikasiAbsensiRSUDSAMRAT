@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, RefreshControl } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {Ilustration1, Ilustration6} from '../../assets/images';
 import NotificationCard from '../../components/NotificationCard';
@@ -8,13 +8,25 @@ import axios from 'axios';
 const Notification = () => {
   const [getNotification, setGetNotification] = useState([]);
   const [clickedNotifications, setClickedNotifications] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+      setRefreshing(true);
+
+      getNotif()
+      .then(() => {
+          setRefreshing(false);
+      })
+      .catch(() => {
+          setRefreshing(false);
+      });
+  }
 
   const getNotif = async () => {
     try {
       const response = await axios.get(
         'http://rsudsamrat.site:3001/api/notification',
       );
-      console.log(response.data.data);
       setGetNotification(response.data.data);
     } catch (error) {
       console.log(error);
@@ -23,7 +35,6 @@ const Notification = () => {
 
   const handleNotificationClick = index => {
     if (clickedNotifications.includes(index)) {
-      // setClickedNotifications(clickedNotifications.filter(i => i !== index));
     } else {
       setClickedNotifications([...clickedNotifications, index]);
     }
@@ -37,9 +48,6 @@ const Notification = () => {
     socketService.initializeSocket();
   }, []);
 
-  // useEffect(() => {
-  //     setGetNotification(notification);
-  // }, [])
 
   useEffect(() => {
     socketService.on('recieve_message', data => {
@@ -53,7 +61,14 @@ const Notification = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+          />
+        }
+      >
         <Image source={Ilustration1} style={{position: 'absolute'}} />
         <View style={styles.header}>
           <Text style={styles.notification}>Notifications</Text>

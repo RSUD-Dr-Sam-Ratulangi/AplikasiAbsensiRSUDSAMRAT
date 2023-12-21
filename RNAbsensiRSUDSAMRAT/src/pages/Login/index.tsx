@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, View, SafeAreaView, TextInput, ScrollView, Dimensions, Alert, Platform } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ilustration3, Logo } from '../../assets/images';
 import Button from '../../components/Button';
@@ -27,10 +27,9 @@ const Login = ({navigation}: any) => {
 
     const storeAccessToken = async (token, nik) => {
         try {
-            await AsyncStorage.multiSet([['access_token', token], ['nik', nik]]);
-            console.log('Token dan nik berhasil disimpan.');
+            await AsyncStorage.multiSet([['access_token', token], ['nik', nik], ['password', password]]);
         } catch (error) {
-            console.log('Gagal menyimpan token dan nik:', error);
+            console.log(error);
         }
     };
 
@@ -49,7 +48,6 @@ const Login = ({navigation}: any) => {
                     navigation.push('Tabs');
                 }
             } else {
-                console.log("No access token found!")
                 Alert.alert(
                     '',
                     'Something wrong when access your account!',
@@ -75,6 +73,24 @@ const Login = ({navigation}: any) => {
             )
         });
     };
+
+    useEffect(() => {
+        const keys = ['nik', 'password'];
+
+        AsyncStorage.multiGet(keys)
+        .then((result) => {
+            result.forEach(([key, value]) => {
+                if (key === 'nik') {
+                    setNik(value);
+                } else if (key === 'password') {
+                    setPassword(value);
+                }
+            });
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+    }, [])
 
 
     return (
@@ -119,7 +135,7 @@ const styles = StyleSheet.create({
     },
     logo:{
         height: 115,
-        width: 88,
+        width: 115,
         marginTop: 120
     },
     text:{
