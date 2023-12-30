@@ -19,7 +19,7 @@ import LottieView from 'lottie-react-native';
 
 const App = () => {
   const [employee, setEmployee] = useState<Employee[]>([]);
-  const [isConnected, setIsConnected] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
 
   const Stack = createNativeStackNavigator();
 

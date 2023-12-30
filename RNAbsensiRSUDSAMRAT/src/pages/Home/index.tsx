@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {Ilustration1, ProfilePicture} from '../../assets/images';
@@ -23,6 +24,7 @@ const Home = ({navigation}) => {
   const [checkOutTime, setCheckOutTime] = useState('');
   const [getNotification, setGetNotification] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const getNotif = async () => {
     try {
@@ -123,34 +125,51 @@ const Home = ({navigation}) => {
 
   const getData = async employeeId => {
     const url = `http://rsudsamrat.site:9999/api/v1/dev/attendances/filter?employeeId=${employeeId}`;
-    await axios
-      .get(url)
-      .then(function (response) {
-        const uniqueScheduleCounts = {};
-        response.data.forEach(item => {
-          const scheduleDate = item.attendances[0].scheduleDate;
-          const scheduleId = item.scheduleId;
-          if (!uniqueScheduleCounts[scheduleDate]) {
-            uniqueScheduleCounts[scheduleDate] = new Set();
-          }
-          uniqueScheduleCounts[scheduleDate].add(scheduleId);
-        });
+    try {
+      const response = await axios.get(url);
 
-        const numberOfUniqueDates = Object.keys(uniqueScheduleCounts).length;
-        setTotalDays(numberOfUniqueDates);
-      })
-      .catch(function (error) {
-        console.log('error:', error);
+      const uniqueScheduleCounts = {};
+      response.data.forEach(item => {
+        const scheduleDate = item.attendances[0].scheduleDate;
+        const scheduleId = item.scheduleId;
+        if (!uniqueScheduleCounts[scheduleDate]) {
+          uniqueScheduleCounts[scheduleDate] = new Set();
+        }
+        uniqueScheduleCounts[scheduleDate].add(scheduleId);
       });
+
+      const numberOfUniqueDates = Object.keys(uniqueScheduleCounts).length;
+      setTotalDays(numberOfUniqueDates);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
   useEffect(() => {
     getNik();
   }, []);
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    setIsLoading(true);
+
+    try {
+      // Use Promise.all to concurrently fetch data
+      await Promise.all([getNotif(), getNik(), getNotif()]);
+    } catch (error) {
+      console.error('Error during data fetching:', error);
+    } finally {
+      setRefreshing(false);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.page}>
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }>
         <Image source={Ilustration1} style={styles.ilustration} />
         <View style={styles.header}>
           <View style={styles.profilePicture}>
@@ -175,7 +194,6 @@ const Home = ({navigation}) => {
             <ActivityIndicator
               size={'large'}
               style={{
-                position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
@@ -184,45 +202,39 @@ const Home = ({navigation}) => {
             />
           ) : (
             <>
-              <Text style={styles.text1}>Today Attendance</Text>
-              <View style={styles.cardContainer}>
-                <AttendanceCard
-                  icon={require('./../../assets/icons/Signin.png')}
-                  title="Check In"
-                  time={checkInTime}
-                  addInfo="Working time"
-                />
-                <AttendanceCard
-                  icon={require('./../../assets/icons/Signout.png')}
-                  title="Check Out"
-                  time={checkOutTime}
-                  addInfo="Go Home"
-                />
-              </View>
+              <Text style={styles.text1}>Total Hari Bekerja :</Text>
+
               <TouchableOpacity
                 style={styles.additionalCard}
                 activeOpacity={0.8}
                 onPress={() => navigation.navigate('History')}>
                 <AttendanceCard
                   icon={require('./../../assets/icons/MiniCalendar.png')}
-                  title="Total Days"
+                  title="Total Hari"
                   time={totalDays}
-                  addInfo="Working Days"
+                  addInfo="Hari Kerja"
                 />
               </TouchableOpacity>
+
+              <View style={styles.announcementContainer}>
+                <Text style={styles.text1}>Pengumuman :</Text>
+                {getNotification.length > 0 ? (
+                  getNotification.map((notif, index) => (
+                    <AnnouncementCard
+                      key={index}
+                      title={notif.title}
+                      desc={notif.desc}
+                      date={notif.date}
+                    />
+                  ))
+                ) : (
+                  <Text style={styles.greeting}>
+                    TIDAK ADA PENGUMUMAN UNTUK SAAT INI.
+                  </Text>
+                )}
+              </View>
             </>
           )}
-        </View>
-        <View style={styles.announcementContainer}>
-          <Text style={styles.text1}>Announcement :</Text>
-          {getNotification.map((notif, index) => (
-            <AnnouncementCard
-              key={index}
-              title={notif.title}
-              desc={notif.desc}
-              date={notif.date}
-            />
-          ))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -278,12 +290,11 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   additionalCard: {
-    alignItems: 'center',
     marginTop: 21,
+    width: 100, // or use flex: 1
   },
   announcementContainer: {
     marginTop: 20,
-    paddingHorizontal: 20,
     marginBottom: 90,
   },
 });
