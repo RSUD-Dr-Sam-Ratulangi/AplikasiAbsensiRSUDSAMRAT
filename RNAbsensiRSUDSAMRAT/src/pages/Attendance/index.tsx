@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import MapView, {Polygon} from 'react-native-maps';
@@ -32,6 +33,8 @@ const Attendance = ({navigation}: any) => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [currentDate, setCurrentDate] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const polygonCoordinates = [
     {latitude: 1.309076, longitude: 124.915889},
@@ -57,6 +60,7 @@ const Attendance = ({navigation}: any) => {
 
   const getScheduleTime = async (attendanceDate, employeeId) => {
     try {
+      setIsLoading(true);
       const scheduleResponse = await axios.get(
         'http://rsudsamrat.site:9999/api/v1/dev/schedule',
       );
@@ -100,6 +104,8 @@ const Attendance = ({navigation}: any) => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -171,11 +177,6 @@ const Attendance = ({navigation}: any) => {
       const employeeId = await AsyncStorage.getItem('employeeId');
       const response = await axios.get(
         `http://rsudsamrat.site:9999/api/v1/dev/attendances/byDateAndEmployee?attendanceDate=${attendanceDate}&employeeId=${employeeId}`,
-      );
-
-      console.log(
-        'ini response check attendace sudah ada atau belum',
-        response.data,
       );
 
       const hasTakenAttendance =
@@ -264,7 +265,7 @@ const Attendance = ({navigation}: any) => {
   };
 
   const handleFocusUserLocation = () => {
-    if (userLocation && mapRef) {
+    if (userLocation && mapRef && mapReady) {
       mapRef.animateCamera({center: userLocation, zoom: 18});
     }
   };
@@ -301,6 +302,7 @@ const Attendance = ({navigation}: any) => {
             style={{flex: 1, height: '100%', width: '100%'}}
             showsUserLocation={true}
             showsMyLocationButton={false}
+            onMapReady={() => setMapReady(true)}
             onUserLocationChange={event => {
               const {coordinate} = event.nativeEvent;
               setUserLocation(coordinate);
@@ -329,60 +331,71 @@ const Attendance = ({navigation}: any) => {
               </View>
               <View style={styles.statusContainer}>
                 <Text style={styles.status1}>Status:</Text>
-                <Text
-                  style={[
-                    styles.status1,
-                    {color: '#D20C0C', textTransform: 'uppercase'},
-                  ]}>
-                  {status}
-                </Text>
+                {isLoading ? (
+                  <View>
+                    <ActivityIndicator size={'small'} />
+                  </View>
+                ) : (
+                  <Text
+                    style={[
+                      styles.status1,
+                      {color: '#D20C0C', textTransform: 'uppercase'},
+                    ]}>
+                    {status}
+                  </Text>
+                )}
               </View>
             </View>
           </View>
         </View>
-        <View style={styles.contentContainer}>
-          <View
-            style={{
-              width: 140,
-              height: 3,
-              backgroundColor: '#04837B',
-              marginTop: 16,
-              borderRadius: 10,
-            }}></View>
-          <View style={styles.locationContainer}>
-            <Image
-              source={require('./../../assets/icons/IconLocation.png')}
+        {isLoading ? (
+          <View>
+            <ActivityIndicator size={'large'} />
+          </View>
+        ) : (
+          <View style={styles.contentContainer}>
+            <View
               style={{
-                width: 43,
-                height: 44,
-                tintColor: '#FD0202',
-                marginRight: 12,
-              }}
-            />
-            <View>
-              <Text style={styles.locationName}>
-                RSUD DR SAM RATULANGI TONDANO
-              </Text>
-              <Text style={styles.locationDesc}>
-                Kembuan, Tondano Utara, Minahasa, Sulawesi Utara
-              </Text>
+                width: 140,
+                height: 3,
+                backgroundColor: '#04837B',
+                marginTop: 16,
+                borderRadius: 10,
+              }}></View>
+            <View style={styles.locationContainer}>
+              <Image
+                source={require('./../../assets/icons/IconLocation.png')}
+                style={{
+                  width: 43,
+                  height: 44,
+                  tintColor: '#FD0202',
+                  marginRight: 12,
+                }}
+              />
+              <View>
+                <Text style={styles.locationName}>
+                  RSUD DR SAM RATULANGI TONDANO
+                </Text>
+                <Text style={styles.locationDesc}>
+                  Kembuan, Tondano Utara, Minahasa, Sulawesi Utara
+                </Text>
+              </View>
             </View>
-          </View>
-          <View style={styles.specialButtonContainer}>
-            <TouchableOpacity
-              disabled
-              style={[styles.specialButton, {backgroundColor: viewAColor}]}
-              activeOpacity={0.8}
-              onPress={handleViewAClick}>
-              <Text style={styles.specialButtonText}>WFH</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.specialButton, {backgroundColor: viewBColor}]}
-              onPress={handleViewBClick}>
-              <Text style={styles.specialButtonText}>WFO</Text>
-            </TouchableOpacity>
-          </View>
-          {/* <TouchableOpacity
+            <View style={styles.specialButtonContainer}>
+              <TouchableOpacity
+                disabled
+                style={[styles.specialButton, {backgroundColor: viewAColor}]}
+                activeOpacity={0.8}
+                onPress={handleViewAClick}>
+                <Text style={styles.specialButtonText}>WFH</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.specialButton, {backgroundColor: viewBColor}]}
+                onPress={handleViewBClick}>
+                <Text style={styles.specialButtonText}>WFO</Text>
+              </TouchableOpacity>
+            </View>
+            {/* <TouchableOpacity
             style={[
               styles.attendanceButton,
               {
@@ -397,28 +410,29 @@ const Attendance = ({navigation}: any) => {
             disabled={isButtonDisabled}>
             <Text style={styles.specialButtonText}>Absen Khusus</Text>
           </TouchableOpacity> */}
-          <TouchableOpacity
-            style={[
-              styles.specialButton,
-              {
-                backgroundColor: '#01A7A3',
-                width: '80%',
-                marginTop: 15,
-                marginBottom: 90,
-                height: 52,
-                flexDirection: 'row',
-              },
-            ]}
-            onPress={handleClickCameraButton}>
-            <Image
-              source={require('./../../assets/icons/IconCamera.png')}
-              style={{width: 24, height: 24, marginRight: 5}}
-            />
-            <Text style={{fontSize: 16, color: '#fff', fontWeight: '500'}}>
-              Ambil Absen
-            </Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={[
+                styles.specialButton,
+                {
+                  backgroundColor: '#01A7A3',
+                  width: '80%',
+                  marginTop: 15,
+                  marginBottom: 90,
+                  height: 52,
+                  flexDirection: 'row',
+                },
+              ]}
+              onPress={handleClickCameraButton}>
+              <Image
+                source={require('./../../assets/icons/IconCamera.png')}
+                style={{width: 24, height: 24, marginRight: 5}}
+              />
+              <Text style={{fontSize: 16, color: '#fff', fontWeight: '500'}}>
+                Ambil Absen
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

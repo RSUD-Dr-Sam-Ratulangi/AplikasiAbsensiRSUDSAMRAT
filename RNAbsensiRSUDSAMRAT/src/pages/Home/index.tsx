@@ -10,12 +10,13 @@ import {
   RefreshControl,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {Ilustration1, ProfilePicture} from '../../assets/images';
+import {Ilustration1, UsersImage} from '../../assets/images';
 import AttendanceCard from '../../components/AttendanceCard';
 import AnnouncementCard from '../../components/AnnouncementCard';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import socketService from '../../config/socket/socket';
+import {Notifications} from 'react-native-notifications';
 
 const Home = ({navigation}) => {
   const [name, setName] = useState('');
@@ -32,6 +33,15 @@ const Home = ({navigation}) => {
         'http://rsudsamrat.site:3001/api/notification',
       );
       setGetNotification(response.data.data);
+      const notifications = response.data.data || [];
+
+      notifications.forEach((notification, index) => {
+        Notifications.postLocalNotification({
+          title: notification.title,
+          body: notification.body,
+          id: index,
+        } as any);
+      });
     } catch (error) {
       console.log(error);
     }
@@ -174,10 +184,10 @@ const Home = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.profilePicture}>
             <Image
-              source={ProfilePicture}
+              source={UsersImage}
               style={{
-                width: 70,
-                height: 70,
+                width: 65,
+                height: 65,
                 borderRadius: 50,
                 borderWidth: 1,
                 borderColor: '#000f',

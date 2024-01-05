@@ -93,7 +93,7 @@ const ModalApp: React.FC<ModalAppProps> = ({
                     styles.checkInButton,
                     checkInPressed ? styles.pressedButton : null,
                   ]}>
-                  <Text>Check In</Text>
+                  <Text style={{color: 'black'}}>Check In</Text>
                 </TouchableHighlight>
                 <TouchableHighlight
                   onPress={handleCheckOutPress}
@@ -102,7 +102,7 @@ const ModalApp: React.FC<ModalAppProps> = ({
                     styles.checkOutButton,
                     checkOutPressed ? styles.pressedButton : null,
                   ]}>
-                  <Text>Check Out</Text>
+                  <Text style={{color: 'black'}}>Check Out</Text>
                 </TouchableHighlight>
               </View>
               <View>
@@ -179,6 +179,8 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 15,
     textAlign: 'center',
+    color: 'black',
+    fontWeight: 'bold',
   },
   overlay: {
     flex: 1,

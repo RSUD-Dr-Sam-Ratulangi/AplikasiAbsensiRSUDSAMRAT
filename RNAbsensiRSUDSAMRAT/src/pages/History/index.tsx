@@ -155,56 +155,54 @@ const History = ({navigation}: any) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }>
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size={'large'} />
-          </View>
-        ) : (
-          <>
-            <Image
-              source={require('./../../assets/images/Ilustration4.png')}
-              style={{width: screenWidht, height: 50}}
-              resizeMode="cover"
-            />
-            <Calendar
-              style={{
-                height: 350,
-              }}
-              current={currentDate}
-              onDayPress={handleDayPress}
-              markedDates={getMarkedDates}
-            />
-            <View>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size={'large'} />
+        </View>
+      ) : (
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size={'large'} />
+            </View>
+          ) : (
+            <>
               <Image
-                source={require('./../../assets/images/Ilustration5.png')}
-                style={{width: screenWidht, height: 110, position: 'absolute'}}
+                source={require('./../../assets/images/Ilustration4.png')}
+                style={{width: screenWidht, height: 50}}
                 resizeMode="cover"
               />
-              <Text style={styles.status}>{status}</Text>
-              {isEnableDesc ? (
-                <View style={styles.desc}>
-                  <View style={styles.locationContainer}>
-                    <Image
-                      source={require('./../../assets/icons/IconLocation.png')}
-                      style={{width: 38, height: 38}}
-                    />
-                    <Text style={styles.text}>{location}</Text>
-                  </View>
-                  <View style={styles.timeContainer}>
-                    <Image
-                      source={require('./../../assets/icons/IconTime.png')}
-                      style={{width: 33, height: 33, marginRight: 2}}
-                    />
-                    <Text style={styles.text}>
-                      {' '}
-                      {timeIn} {dateCheckIn}
-                    </Text>
-                  </View>
-                  {isCheckOut ? (
+              <Calendar
+                style={{
+                  height: 350,
+                }}
+                current={currentDate}
+                onDayPress={handleDayPress}
+                markedDates={getMarkedDates}
+              />
+              <View>
+                <Image
+                  source={require('./../../assets/images/Ilustration5.png')}
+                  style={{
+                    width: screenWidht,
+                    height: 110,
+                    position: 'absolute',
+                  }}
+                  resizeMode="cover"
+                />
+                <Text style={styles.status}>{status}</Text>
+                {isEnableDesc ? (
+                  <View style={styles.desc}>
+                    <View style={styles.locationContainer}>
+                      <Image
+                        source={require('./../../assets/icons/IconLocation.png')}
+                        style={{width: 38, height: 38}}
+                      />
+                      <Text style={styles.text}>{location}</Text>
+                    </View>
                     <View style={styles.timeContainer}>
                       <Image
                         source={require('./../../assets/icons/IconTime.png')}
@@ -212,26 +210,38 @@ const History = ({navigation}: any) => {
                       />
                       <Text style={styles.text}>
                         {' '}
-                        {timeOut} {dateCheckOut}
+                        {timeIn} {dateCheckIn}
                       </Text>
                     </View>
-                  ) : (
-                    <></>
-                  )}
-                </View>
-              ) : (
-                <></>
-              )}
-              {/* Modal component */}
-              <ModalApp
-                modalVisible={modalVisible}
-                setModalVisible={setModalVisible}
-                selectedDateData={selectedDateData} // Pass the data as a prop
-              />
-            </View>
-          </>
-        )}
-      </ScrollView>
+                    {isCheckOut ? (
+                      <View style={styles.timeContainer}>
+                        <Image
+                          source={require('./../../assets/icons/IconTime.png')}
+                          style={{width: 33, height: 33, marginRight: 2}}
+                        />
+                        <Text style={styles.text}>
+                          {' '}
+                          {timeOut} {dateCheckOut}
+                        </Text>
+                      </View>
+                    ) : (
+                      <></>
+                    )}
+                  </View>
+                ) : (
+                  <></>
+                )}
+                {/* Modal component */}
+                <ModalApp
+                  modalVisible={modalVisible}
+                  setModalVisible={setModalVisible}
+                  selectedDateData={selectedDateData} // Pass the data as a prop
+                />
+              </View>
+            </>
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };
@@ -269,7 +279,11 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -20, // Half of the ActivityIndicator size
+    marginLeft: -20, // Half of the ActivityIndicator size
+    zIndex: 1,
   },
 });

@@ -1,6 +1,6 @@
 import Logo from './Logo_rs.png';
 import confirmationPhoto from './confirmationPhoto.png';
-import ProfilePicture from './ProfilePicture.png';
+import UsersImage from './UsersImage.png';
 import Ilustration from './Ilustration.png';
 import Ilustration1 from './Ilustration1.png';
 import Ilustration2 from './Ilustration2.png';
@@ -12,16 +12,16 @@ import Ilustration7 from './Ilustration7.png';
 import NotificationSmallImage from './NotificationSmallImage.png';
 
 export {
-    Logo,
-    ProfilePicture,
-    confirmationPhoto,
-    Ilustration,
-    Ilustration1,
-    Ilustration2,
-    Ilustration3,
-    Ilustration4,
-    Ilustration5,
-    Ilustration6,
-    Ilustration7,
-    NotificationSmallImage
-}
+  Logo,
+  UsersImage,
+  confirmationPhoto,
+  Ilustration,
+  Ilustration1,
+  Ilustration2,
+  Ilustration3,
+  Ilustration4,
+  Ilustration5,
+  Ilustration6,
+  Ilustration7,
+  NotificationSmallImage,
+};
