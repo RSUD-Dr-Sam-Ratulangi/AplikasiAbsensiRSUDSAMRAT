@@ -141,9 +141,7 @@ export default function PageAbsensi() {
   const pdfcolumns = [
     { title: "Name", field: "name" },
     { title: "Waktu", field: "waktu" },
-    { title: "Sif", field: "sif" },
     { title: "Kategori", field: "kategori" },
-    { title: "Presensi", field: "presensi" },
   ];
 
   useEffect(() => {
@@ -396,7 +394,7 @@ export default function PageAbsensi() {
               </div>
             </div>
           </div>
-          <DropdownButton filteredAbsences={filteredAbsences} />
+          <DropdownButton filteredAbsences={filteredAbsences}  />
         </div>
         {/* Search Bar */}
         <div className="relative flex items-center w-full">

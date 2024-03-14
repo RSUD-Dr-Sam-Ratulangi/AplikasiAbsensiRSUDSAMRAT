@@ -21,10 +21,10 @@ const DropdownButton = (props) => {
     let data = props.filteredAbsences.map((abs) => {
       return {
         name: abs?.name,
-        waktu: abs?.time,
-        sif: abs?.shift,
+        clockIn: abs?.clockInTime,
+        waktu: abs?.clockOutTime,
+        tanggal: abs?.time,
         kategori: abs?.category,
-        presensi: abs?.presence,
       };
     });
     const doc = new jsPDF();
@@ -35,15 +35,15 @@ const DropdownButton = (props) => {
       body: data,
     });
     doc.save("table.pdf");
-    console.log(data);
+    console.log("pdf save",data);
   };
 
   const pdfcolumns = [
     { title: "Name", field: "name" },
-    { title: "Waktu", field: "waktu" },
-    { title: "Sif", field: "sif" },
+    { title: "Waktu Datang", field: "clockIn" },
+    { title: "Waktu Pulang", field: "waktu"},
+    {title: "Tanggal", field: "tanggal"},
     { title: "Kategori", field: "kategori" },
-    { title: "Presensi", field: "presensi" },
   ];
 
   useEffect(() => {
@@ -89,7 +89,7 @@ const DropdownButton = (props) => {
           style={{ zIndex: 2, width: buttonWidth }} // Set z-index to 2 to ensure the dropdown is above the button
         >
           <button
-            className="block px-4 py-2 text-gray-800 hover:bg-gray-200 w-full text-left"
+            className="block px-4 py-2 text-red-800 hover:bg-gray-200 w-full text-left"
             onClick={() => handleDropdownButtonClick("Print PDF")}
           >
             Print PDF

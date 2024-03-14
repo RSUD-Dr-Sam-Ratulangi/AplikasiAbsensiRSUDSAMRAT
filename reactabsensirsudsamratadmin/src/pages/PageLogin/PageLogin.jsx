@@ -34,6 +34,12 @@ export default function LoginPage() {
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
+    }
+  };
+
   return (
     <div className='flex bg-white'>
       <div className='flex justify-center items-center w-4/6 h-screen '>
@@ -66,6 +72,7 @@ export default function LoginPage() {
                     type='text'
                     value={nikUser}
                     onChange={handleChangeUserNik}
+                    onKeyPress={handleKeyPress}
                     className='input bg-transparent rounded-none text-black focus:outline-none input-ghost border-b-black border-l-white border-r-white border-t-white'
                   />
                 </div>
@@ -77,6 +84,7 @@ export default function LoginPage() {
                     type='password'
                     value={password}
                     onChange={handleChangePassword}
+                    onKeyPress={handleKeyPress}
                     className='input focus:outline-none rounded-none text-black border-b-black border-l-white border-r-white border-t-white  bg-transparent'
                   />
                 </div>

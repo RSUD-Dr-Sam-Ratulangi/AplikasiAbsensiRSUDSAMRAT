@@ -4,7 +4,7 @@ import api from '../../config/axios';
 import { HiOutlineX } from 'react-icons/hi';
 
 const ModalBukti = forwardRef((props, ref) => {
-  const { imageCheckIn, imageCheckOut, clockInTime, clockOutTime, selectedData } = props;
+  const { imageCheckIn, imageCheckOut, clockInTime, clockIn, clockOut, clockOutTime, selectedData } = props;
   const [isCheckedIn, setIsCheckedIn] = useState(false);
 
   const toggleCheckIn = () => {
@@ -25,10 +25,10 @@ const ModalBukti = forwardRef((props, ref) => {
 
 const getClockToDisplay = () => {
   if(isCheckedIn) {
-    return <p className='text-green-700 text-lg font-bold'>{clockInTime}</p>;
+    return <p className='text-green-700 text-lg font-bold'>{clockInTime || clockIn}</p>;
   } else {
-    if(clockOutTime) {
-      return clockOutTime
+    if(clockOutTime || clockOut) {
+      return clockOutTime || clockOut
     } else {
       return <p className='text-red-400 font-bold'>BELUM ABSEN</p>
     }

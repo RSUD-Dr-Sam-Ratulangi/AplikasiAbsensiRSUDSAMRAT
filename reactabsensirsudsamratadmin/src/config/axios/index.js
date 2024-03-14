@@ -5,7 +5,6 @@ import Cookies from "js-cookie";
 
 export const api = axios.create({
   baseURL: "http://rsudsamrat.site:9999",
-  timeout: 120000,
   headers: {
     "Content-Type": "application/json",
   },
