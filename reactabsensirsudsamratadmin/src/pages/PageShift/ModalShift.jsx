@@ -143,24 +143,16 @@ const ModalShift = forwardRef((props, ref) => {
       locationId: locId,
     };
 
-    if (scheduleTime === "Pagi") {
-      dataSchedule.shiftId = 1;
-    } else if (scheduleTime === "Sore") {
-      dataSchedule.shiftId = 2;
-    } else if (scheduleTime === "Malam") {
-      dataSchedule.shiftId = 3;
-    } else if (scheduleTime === "Management") {
-      dataSchedule.shiftId = 4;
-    } else if (scheduleTime === 'no_shift') {
+if (scheduleTime === 'no_shift') {
       dataSchedule.shiftId = 6;
     }
 
-    const dataDateRange = {
-      shiftId: 2,
-      startDate: dateFrom,
-      endDate: dateTo,
-      locationIds: [1, 1, 1, 1, 1, 1, 1],
-    };
+    // const dataDateRange = {
+    //   shiftId: 2,
+    //   startDate: dateFrom,
+    //   endDate: dateTo,
+    //   locationIds: [1, 1, 1, 1, 1, 1, 1],
+    // };
 
     api
       .post("/api/v1/dev/schedule", dataSchedule)
@@ -173,14 +165,14 @@ const ModalShift = forwardRef((props, ref) => {
         createFailed();
         console.log(err);
       });
-    api
-      .post("/api/v1/dev/schedule/add-schedule-with-time-range", dataDateRange)
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    // api
+    //   .post("/api/v1/dev/schedule/add-schedule-with-time-range", dataDateRange)
+    //   .then((res) => {
+    //     console.log(res);
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
   };
 
   const postLocationData = () => {
@@ -239,13 +231,13 @@ const ModalShift = forwardRef((props, ref) => {
     setIsOpenLocation(!isOpenLocation);
   };
 
-  const handleDateChangeTo = (e) => {
-    setDateTo(e.target.value);
-  };
+  // const handleDateChangeTo = (e) => {
+  //   setDateTo(e.target.value);
+  // };
 
-  const handleDateChangeFrom = (e) => {
-    setDateFrom(e.target.value);
-  };
+  // const handleDateChangeFrom = (e) => {
+  //   setDateFrom(e.target.value);
+  // };
 
   const handleDateChangeSchedule = (e) => {
     setDateSchedule(e.target.value);
@@ -386,7 +378,7 @@ const ModalShift = forwardRef((props, ref) => {
                           : "opacity-0 scale-y-95"
                       }`}
                     >
-                      <li
+                      {/* <li
                         className="block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white"
                         onClick={() => handleOptionClick("Pagi")}
                       >
@@ -409,7 +401,7 @@ const ModalShift = forwardRef((props, ref) => {
                         onClick={() => handleOptionClick("Management")}
                       >
                         Management
-                      </li>
+                      </li> */}
                       <li
                         className='block px-4 py-2 text-sm text-gray-400 cursor-pointer hover:bg-primary-2 hover:text-white'
                         onClick={() => handleOptionClick('no_shift')}>
@@ -426,8 +418,8 @@ const ModalShift = forwardRef((props, ref) => {
                     className="w-full text-gray-400 input input-bordered"
                   />
                   {/* create schedule data range*/}
-                  <div className="flex flex-col items-center gap-2 mb-8 w-96">
-                    <h1 className="self-start ">Tanggal</h1>
+                  {/* <div className="flex flex-col items-center gap-2 mb-8 w-96">
+                    <h1 className="self-start ">TanggalLLLLLL</h1>
                     <button
                       className="absolute block cursor-pointer top-1 right-1"
                       onClick={closeModal}
@@ -447,7 +439,7 @@ const ModalShift = forwardRef((props, ref) => {
                       onChange={handleDateChangeTo}
                       className="w-full text-gray-400 input input-bordered"
                     />
-                  </div>
+                  </div> */}
                   <button
                     onClick={() => {
                       if (props.type === "Edit") {

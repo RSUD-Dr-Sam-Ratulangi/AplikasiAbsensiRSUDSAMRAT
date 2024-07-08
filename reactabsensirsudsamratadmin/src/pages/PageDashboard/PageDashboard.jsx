@@ -27,6 +27,10 @@ export default function PageDashboard() {
   const [selectedData, setSelectedData] = useState(null);
   const modalBuktiRef = React.useRef();
 
+  const getFormattedDate = (date) => {
+    return date.toISOString().split("T")[0];
+  };
+
   const columns = [
     {
       name: "Nama",
@@ -101,11 +105,14 @@ export default function PageDashboard() {
     setSelectedDate(dateValue);
   };
 
-  const getFormattedDate = (date) => {
-    return date.toISOString().split("T")[0];
-  };
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const storedDate = localStorage.getItem('selectedDate');
+    return storedDate ? storedDate : getFormattedDate(new Date());
+  });
 
-  const [selectedDate, setSelectedDate] = useState(getFormattedDate(new Date()));
+  useEffect(() => {
+    localStorage.setItem('selectedDate', selectedDate);
+  }, [selectedDate]);
 
 
   const customStyles = {

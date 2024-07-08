@@ -27,7 +27,7 @@ export default function LoginPage() {
         password: password
       });
       dispatch(loginSuccess({ accessToken: response.data.data.access_token }));
-      console.log(response.data.message);
+      console.log(response.data);
       navigate('/dashboard');
     } catch (error) {
       console.log(error);

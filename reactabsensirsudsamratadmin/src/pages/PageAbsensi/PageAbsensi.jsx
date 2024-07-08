@@ -1,40 +1,47 @@
 import React from "react";
-import { HiSearch, HiOutlineEye } from "react-icons/hi";
+import {
+  HiOutlineEye,
+  HiChevronLeft,
+  HiChevronRight,
+
+} from "react-icons/hi";
 import DataTable from "react-data-table-component";
 import ModalBukti from "./ModalBukti";
 import { useState, useEffect } from "react";
 import {
   api,
-  // apiCheckToken
 } from "../../config/axios";
-import jsPDF from "jspdf";
-// import { useDispatch } from 'react-redux';
-// import { expiredToken } from '../../config/authState/authSlice';
-import DropdownButton from "./DropdownAbsensi";
+import ModalPrint from "./ModalPrint";
 
 export default function PageAbsensi() {
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1;
+
+  const [startDate, setStartDate] = useState(
+    `${currentYear}-${currentMonth < 10 ? "0" + currentMonth : currentMonth}-01`
+  );
+  const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
   const [absences, setAbsences] = useState([]);
-  const [filteredAbsences, setFilteredAbsences] = useState([]);
+  const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress]  = useState(0);
-  // const dispatch = useDispatch();
-  const [searchTerm, setSearchTerm] = useState('');
   const modalBuktiRef = React.useRef();
   const [imgCheckIn, setImgCheckIn] = useState(null);
   const [imgCheckOut, setImgCheckOut] = useState(null);
   const [clockCheckIn, setClockCheckIn] = useState(null);
   const [clockCheckOut, setClockCheckOut] = useState(null);
   const [selectedData, setSelectedData] = useState(null);
+  const [isModalPrintOpen, setIsModalPrintOpen] = useState(false);
+
+  const openModalPrint = () => {
+    setIsModalPrintOpen(true);
+  };
+
+  const closeModalPrint = () => {
+    setIsModalPrintOpen(false);
+  };
 
   const columns = [
-    // {
-    //   name: 'No.',
-    //   selector: (row) => row.employeeId,
-    //   sortable: true,
-    //   width: '75px'
-    // },
     {
       name: "Nama",
       selector: (row) => row.name,
@@ -52,40 +59,18 @@ export default function PageAbsensi() {
       selector: (row) => row.category,
     },
     {
-      name: 'Waktu Datang - Waktu Pulang',
+      name: "Waktu Datang - Waktu Pulang",
       selector: (row) => {
-        if (row.clockInTime === null && row.clockOutTime === null) {
-          return 'BELUM ABSEN';
-        } else if (row.clockInTime === null && row.clockOutTime) {
-          return `?? Absen Datang ??`
-        } else if (row.clockInTime && row.clockOutTime === null) {
-          return `${row.clockInTime} - Belum Absen Pulang`;
+        if (row.clockIn === null && row.clockOut === null) {
+          return "BELUM ABSEN";
+        } else if (row.clockIn === null && row.clockOut) {
+          return `?? Absen Datang ??`;
+        } else if (row.clockIn && row.clockOut === null) {
+          return `${row.clockIn} - Belum Absen Pulang`;
         } else {
-          return `${row.clockInTime} - ${row.clockOutTime}`;
+          return `${row.clockIn} - ${row.clockOut}`;
         }
-      }
-    },
-    // {
-    //   name: 'Waktu Datang - Waktu Pulang',
-    //   selector: (row) => `${row.clockInTime}-${row.clockOutTime}`
-    // },
-    {
-      name: 'Presensi',
-      cell: (row) => (
-        <div
-          className={`w-3 rounded-full h-3   ${
-            row.presence === 'Alpha'
-              ? 'bg-red-600'
-              : row.presence === 'OnTime'
-              ? 'bg-green-600'
-              : row.presence === 'Late'
-              ? 'bg-[#ECE028]'
-              : row.presence === 'blue'
-              ? 'bg-blue-600'
-              : 'bg-transparent'
-          }`}
-        />
-      ),
+      },
     },
     {
       name: "Bukti",
@@ -95,8 +80,8 @@ export default function PageAbsensi() {
           onClick={() => {
             setImgCheckIn(row.selfieCheckIn);
             setImgCheckOut(row.selfieCheckOut);
-            setClockCheckIn(row.clockInTime);
-            setClockCheckOut(row.clockOutTime);
+            setClockCheckIn(row.clockIn);
+            setClockCheckOut(row.clockOut);
             setSelectedData(row);
             modalBuktiRef.current.open();
             // setImage(row.selfieCheckIn);
@@ -117,245 +102,134 @@ export default function PageAbsensi() {
     },
   };
 
-  const generatePDF = () => {
-    let data = filteredAbsences.map((abs) => {
-      return {
-        name: abs?.name,
-        waktu: abs?.time,
-        sif: abs?.shift,
-        kategori: abs?.category,
-        presensi: abs?.presence,
-      };
-    });
-    const doc = new jsPDF();
-    doc.text('Jadwal Pegawai', 20, 10);
-    doc.autoTable({
-      theme: "grid",
-      columns: pdfcolumns.map((col) => ({ ...col, dataKey: col.field })),
-      body: data,
-    });
-    doc.save('table.pdf');
-    console.log('Print',data);
-  };
+  const handleStartDate = (e) => setStartDate(e.target.value);
+  const handleEndDate = (e) => setEndDate(e.target.value);
+  const handleNextPage = () => setPage(page + 1);
+  const handlePreviousPage = () => setPage(Math.max(1, page - 1));
+  const handleChangePage = (e) => setPage(Number(e.target.value));
 
-  const pdfcolumns = [
-    { title: "Name", field: "name" },
-    { title: "Waktu", field: "waktu" },
-    { title: "Kategori", field: "kategori" },
-  ];
+  const fetchAbsences = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get(
+        `http://rsudsamrat.site:9991/api/v1/dev/attendances/Date/date-range?startDate=${startDate}&endDate=${endDate}&page=${page}&size=20`
+      );
+      const data = response.data;
 
-  useEffect(() => {
-    const fetchAbsences = async () => {
-      // try {
-      //   const response = await apiCheckToken.get('/ping');
-      //   console.log(response.data);
-      //   if (response.data) {
-      setIsLoading(true)
-      try {
-        const response = await api.get(
-          "/api/v1/dev/attendances/all-with-schedule"
-        );
-        const data = response.data;
+      if (Array.isArray(data)) {
+        const extractedData = data.map((item) => {
+          const clockInTime = item.clockIn ? new Date(item.clockIn).toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        }) : null;
+        
+        const clockOutTime = item.clockOut ? new Date(item.clockOut).toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        }) : null;
+        
 
-        console.log("data", data);
-
-        const ExtractData = data.map((attendance, index) => {
-          const shiftStartTime = attendance.shift.start_time;
-          const shiftEndTime = attendance.shift.end_time;
-
-          const clockIn = attendance.attendances[0]?.clockIn
-            ? new Date(attendance.attendances[0].clockIn)
-            : null;
-          const clockOut = attendance.attendances[0]?.clockOut
-            ? new Date(attendance.attendances[0].clockOut)
-            : null;
-
-          const selfieCheckIn = attendance.attendances[0]?.selfieCheckIn
-            ? attendance.attendances[0].selfieCheckIn
-            : null;
-
-          const selfieCheckOut = attendance.attendances[0]?.selfieCheckOut
-            ? attendance.attendances[0].selfieCheckOut
-            : null;
-
-          const formatWaktu = (waktu) => {
-            const options = {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              hour12: false,
-            };
-            return waktu.toLocaleTimeString("en-US", options);
-          };
-          const clockInTime = clockIn ? formatWaktu(clockIn) : null;
-          const clockOutTime = clockOut ? formatWaktu(clockOut) : null;
-
-          let statusPenilaian = 'Alpha'; // Default: Tidak ada data clock in atau clock out
-
-          if (clockInTime && clockOutTime) {
-            if (clockInTime <= shiftStartTime && clockOutTime >= shiftEndTime) {
-              statusPenilaian = 'OnTime'; // Clock in sebelum start_time dan clock out setelah end_time
-            } else if (clockInTime > shiftStartTime) {
-              statusPenilaian = 'Late'; // Clock in setelah start_time
-            }
-          } else if (clockInTime) {
-            if (clockInTime > shiftStartTime) {
-              statusPenilaian = 'Late'; // Clock in setelah start_time
-            }
-          }
-
-          const employeeNamesString = attendance.attendances
-            .map((attendance) => attendance.employee.name)
-            .join(", ")
-            .replace(
-              /\w\S*/g,
-              (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-            );
+          const employeeName = item.employee ? item.employee.name : "Unknown";
+          const shift = item.shift.name || "Unknown";
+          const category = item.attendanceType || "Unknown";
+          const scheduleDate = item.scheduleDate || "Unknown";
+          const selfieCheckIn = item.selfieCheckIn || null;
+          const selfieCheckOut = item.selfieCheckOut || null;
 
           return {
-            clockInTime: clockInTime,
-            clockOutTime: clockOutTime,
-            shiftStartTime: shiftStartTime,
-            shiftEndTime: shiftEndTime,
-            presence: statusPenilaian,
-            employeeId: attendance.attendances.map(
-              (attendance) => attendance.employee.employeeId
-            ),
-            id: index,
-            category: attendance.attendances.map(
-              (attendance) => attendance.attendanceType
-            ),
-            name: employeeNamesString,
-            time: attendance.scheduleDate,
-            shift: attendance.shift.name,
+            name: employeeName,
+            time: scheduleDate,
+            clockIn: clockInTime,
+            clockOut: clockOutTime,
+            shift: shift,
+            category: category,
             selfieCheckIn: selfieCheckIn,
-            selfieCheckOut: selfieCheckOut,
+            selfieCheckOut: selfieCheckOut, 
           };
         });
-        console.log("----------------------", ExtractData);
 
-        setAbsences(ExtractData);
-        setIsLoading(false)
-        // Get the current date in 'yyyy-mm-dd' format
-        const today = new Date().toISOString().slice(0, 10);
-
-        // Filter ExtractData to include only absences with scheduleDate matching today
-        const filteredExtractData = ExtractData.filter((attendance) => {
-          return attendance.time === today;
-        });
-
-        setFilteredAbsences(filteredExtractData);
-      } catch (error) {
-        setIsLoading(false)
-        console.log(error);
+        setAbsences(extractedData);
+        console.log("Extracted Data on page", page, extractedData);
+      } else {
+        setIsLoading(false);
+        console.log("Data is not an array:", data);
       }
-      // try {
-      //   const response = await apiCheckToken.get('/ping');
-      //   console.log(response.data);
-      //   if (response.data) {
-      //   }
-      // } catch (error) {
-      //   console.log(error);
-      //   dispatch(expiredToken());
-      // }
-    };
-    //   } catch (error) {
-    //     console.log(error);
-    //     // dispatch(expiredToken());
-    //   }
-    // };
-
-    fetchAbsences();
-  }, []);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (searchTerm === "" && (startDate === "" || endDate === "")) {
-      const results = absences.filter((abs) => {
-        if (searchTerm === "") {
-          return true;
-        }
-        return null;
-      });
-      setFilteredAbsences(results);
-    } else if (searchTerm !== "") {
-      const results = absences.filter((abs) => {
-        console.log(abs, searchTerm);
-        if (
-          abs.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          abs.employeeId.toString() === searchTerm
-        ) {
-          return abs;
-        }
-        return null;
-      });
-      setFilteredAbsences(results);
-    } else if (searchTerm === "" && (startDate !== "" || endDate !== "")) {
-      if (startDate > endDate) {
-        alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir");
-        return;
-      }
-      const startDateFormatted = startDate.split("-").join("-");
-      const endDateFormatted = endDate.split("-").join("-");
+    fetchAbsences();
+  }, [page]); // Fetch data when startDate, endDate, or page changes
 
-      console.log(startDateFormatted, endDateFormatted);
-
-      if (startDateFormatted > endDateFormatted) {
-        alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir");
-        return;
-      }
-
-      setFilteredAbsences(
-        absences.filter((schedule) => {
-          if (
-            schedule.time >= startDateFormatted &&
-            schedule.time <= endDateFormatted
-          ) {
-            return schedule;
-          }
-          return null;
-        })
-      );
-    }
-    if (searchTerm !== "" && (startDate !== "" || endDate !== "")) {
-      console.log("filteredAbsences", filteredAbsences);
-      if (startDate > endDate) {
-        alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir");
-        return;
-      }
-      const startDateFormatted = startDate.split("-").join("-");
-      const endDateFormatted = endDate.split("-").join("-");
-
-      console.log(startDateFormatted, endDateFormatted);
-
-      if (startDateFormatted > endDateFormatted) {
-        alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir");
-        return;
-      }
-
-      setFilteredAbsences(
-        absences.filter((schedule) => {
-          if (
-            schedule.time >= startDateFormatted &&
-            schedule.time <= endDateFormatted &&
-            schedule.name.toLowerCase().includes(searchTerm.toLowerCase())
-          ) {
-            return schedule;
-          }
-          return null;
-        })
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, startDate, endDate]);
+  const handleFilter = () => {
+    setPage(0);
+    fetchAbsences();
+  };
 
   return (
     <div>
-    {isLoading ? (
-      <div className='flex justify-center items-center h-56'>
-        <span className="loading loading-dots loading-lg"></span>
-      </div>
-    ) : (
-      <div>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-56">
+          <span className="loading loading-dots loading-lg"></span>
+        </div>
+      ) : (
+        <>
+          <div className="flex justify-end gap-5 mr-10">
+            <div className="flex gap-3">
+            <button className="btn bg-primary-2" onClick={openModalPrint}>
+                Print
+              </button>
+            </div>
+            <input
+              className="input border border-gray-300"
+              type="date"
+              onChange={handleStartDate}
+              value={startDate}
+            />
+            <input
+              className="input border border-gray-300"
+              type="date"
+              onChange={handleEndDate}
+              value={endDate}
+            />
+            <button className="btn btn-md bg-primary-2" onClick={handleFilter}>
+              Filter
+            </button>
+          </div>
+          <div className="overflow-auto max-h-[60vh]">
+            <DataTable
+              columns={columns}
+              data={absences}
+              customStyles={customStyles}
+            />
+          </div>
+          <div className="flex justify-center gap-5 mt-5">
+            <button
+              onClick={handlePreviousPage}
+              className="btn btn-sm btn-primary"
+              disabled={page === 0}
+            >
+              <HiChevronLeft />
+            </button>
+            <input
+              className="w-8"
+              type="number"
+              value={page}
+              onChange={handleChangePage}
+              inputMode="numeric"
+            />
+            <button className="btn btn-sm btn-primary" onClick={handleNextPage}>
+              <HiChevronRight />
+            </button>
+          </div>
+        </>
+      )}
       <ModalBukti
         ref={modalBuktiRef}
         imageCheckIn={imgCheckIn}
@@ -365,61 +239,7 @@ export default function PageAbsensi() {
         selectedData={selectedData}
         onClose={() => modalBuktiRef.current.close()}
       />
-
-      <h1 className="text-xl font-medium">Absensi</h1>
-      <div className="flex flex-col gap-3">
-        <div className="flex items-end justify-end gap-3">
-          <div className="flex items-center justify-center gap-3">
-            <div className="w-fit">
-              Tanggal:
-              <div className="flex items-center justify-center gap-2">
-                {/* Aug 21, 2021 */}
-                <input
-                  type="date"
-                  className="input input-bordered"
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </div>
-            </div>
-            <span className=" mt-5">Sampai</span>
-            <div className="w-fit">
-              Tanggal:
-              <div className="flex items-center justify-center gap-2">
-                {/* Aug 21, 2021 */}
-                <input
-                  type="date"
-                  className="input input-bordered"
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-          <DropdownButton filteredAbsences={filteredAbsences}  />
-        </div>
-        {/* Search Bar */}
-        <div className="relative flex items-center w-full">
-          <HiSearch className="absolute left-0" />
-          <input
-            type="text"
-            placeholder="Cari..."
-            className="w-full pl-10 input input-bordered"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <p className="text-xs text-slate-500">
-          {filteredAbsences.length} Absen
-        </p>
-        <div className="overflow-auto max-h-[60vh]">
-          <DataTable
-            columns={columns}
-            data={filteredAbsences}
-            customStyles={customStyles}
-          />
-        </div>
-      </div>
+      <ModalPrint isOpen={isModalPrintOpen} onClose={closeModalPrint} />
     </div>
-    )}
-    </div>
-  )
+  );
 }

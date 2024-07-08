@@ -1,5 +1,5 @@
 import { Link, useOutlet } from 'react-router-dom';
-import logo from '../../assets/admin-logo.png';
+import logo from '../../assets/LOGORSREVISI4.png';
 import headerBg from '../../assets/header-bg.png';
 import {
   HiOutlineHome,
@@ -56,18 +56,19 @@ export const AuthLayout = () => {
     window.location.href = '/';
   };
 
-  const DateNow = () => {
-
-  }
 
   return (
-    <div className='flex flex-col items-stretch justify-start h-full overflow-hidden'>
+    <div className='flex flex-col items-stretch justify-start h-full overflow-hidden font-nunito font-semibold'>
       <div className='relative flex flex-row items-start justify-start h-full overflow-hidden'>
         {/* Left Side */}
 
         <div className='flex flex-col justify-start items-stretch h-screen overflow-hidden p-6 w-[15%] shadow-xl fixed left-0'>
-          <img src={logo} alt='logo' className='mb-5' />
-          <div className='flex flex-col gap-3 flex-2 text-slate-600'>
+          <div className='mb-4'>
+          <img src={logo} alt='logo' className='mb-1' />
+          <h1 className='text-md text-center'>ABSENSI RSUD SAMRATULANGI TONDANO, SIMFONI</h1>
+          <hr className='border-t border-gray-300 mt-4' />
+          </div>
+          <div className='flex flex-col gap-5 flex-auto text-slate-600'>
             <Link
               to='/dashboard'
               onClick={() => setActiveLink('/dashboard')}
@@ -121,6 +122,7 @@ export const AuthLayout = () => {
                 Keluar
               </button>
             )}
+            <hr className='border-t border-gray-300 mt-4' />
           </div>
         </div>
         {/* Right Side */}

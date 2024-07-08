@@ -3,11 +3,7 @@ import Popup from "reactjs-popup";
 import { HiOutlineX } from "react-icons/hi";
 
 const ModalBuktiAbsen = forwardRef((props, ref) => {
-  const {
-    imageCheckIn,
-    imageCheckOut,
-    selectedData,
-  } = props;
+  const { imageCheckIn, imageCheckOut, selectedData } = props;
   const [isCheckedIn, setIsCheckedIn] = useState(false);
 
   const closeModal = () => {
@@ -16,20 +12,6 @@ const ModalBuktiAbsen = forwardRef((props, ref) => {
 
   const toggleCheckIn = () => {
     setIsCheckedIn(!isCheckedIn);
-  };
-
-  const formatDate = (dateString) => {
-    const options = {
-      weekday: "long",
-      day: "numeric",
-      month: "numeric",
-      year: "numeric",
-    };
-    const formattedDate = new Date(dateString).toLocaleDateString(
-      "id-ID",
-      options
-    );
-    return formattedDate;
   };
 
   const getImageToDisplay = () => {
@@ -102,7 +84,9 @@ const ModalBuktiAbsen = forwardRef((props, ref) => {
             <span> {clockToDisplay}</span>
 
             <span className="text-center">
-              {formatDate(selectedData && selectedData.scheduleDate)}
+              {isCheckedIn
+                ? selectedData && selectedData.clockIn
+                : selectedData && selectedData.clockOut}
             </span>
           </div>
           <div className="p-1 border-4 rounded-xl ">

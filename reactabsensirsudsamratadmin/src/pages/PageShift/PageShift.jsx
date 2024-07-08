@@ -151,7 +151,7 @@ export default function PageShift() {
       })
       .catch((err) => {
         console.log(err);
-        setIsLoading(false)
+        setIsLoading(false);
       });
   };
 
@@ -239,12 +239,6 @@ export default function PageShift() {
 
   return (
     <>
-    {isLoading ? (
-      <div className='flex justify-center items-center h-56'>
-      <span className="loading loading-dots loading-lg"></span>
-      </div>
-    ) : (
-      <div>
       <ModalShift
         ref={modalShiftRef}
         onClose={fetchData}
@@ -252,156 +246,164 @@ export default function PageShift() {
         type={modalType}
         data={selectedSchedule}
       />
-      <Popup
-        ref={modalDelete}
-        modal
-        contentStyle={{
-          borderRadius: "12px",
-          padding: "2rem",
-          width: "25rem",
-          height: "10rem",
-        }}
-      >
-        <div className="flex flex-col items-center justify-center gap-4">
-          <h1>apakah anda yakin ingin menghapus schedule ini?</h1>
-          <div className="flex gap-4">
-            <button
-              className=" btn bg-primary-2 w-28"
-              onClick={() => {
-                handleDelete(deleteId);
-                fetchData();
-              }}
-            >
-              Ya
-            </button>
-            <button
-              className="bg-red-500 btn w-28"
-              onClick={() => {
-                modalDelete.current.close();
-                // setDeleteId(null);
-              }}
-            >
-              Tidak
-            </button>
-          </div>
-        </div>
-      </Popup>
-      <h1 className="text-xl font-medium">Schedule</h1>
-      <div className="flex flex-col gap-3">
-        <div className="flex items-end justify-between">
-          <div className="w-fit">
-            Tanggal:
-            <div className="flex items-center justify-center gap-2">
-              <input
-                type="date"
-                className="input input-bordered"
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-              <p>Sampai</p>
-              <input
-                type="date"
-                className="input input-bordered"
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-              <div className="relative inline-block w-48 text-left">
-                <button
-                  type="button"
-                  className="justify-between w-full h-12 bg-white border rounded-md shadow-sm dropdown-button btn text-primary-2 border-primary-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-2"
-                  onClick={toggleDropdown}
-                >
-                  {scheduleTime}
-                  <HiChevronDown />
-                </button>
-                {/*dropdown*/}
+      <div className="flex items-end justify-between">
+        <div className="w-fit">
+          Tanggal:
+          <div className="flex items-center justify-center gap-2">
+            <input
+              type="date"
+              className="input input-bordered"
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <p>Sampai</p>
+            <input
+              type="date"
+              className="input input-bordered"
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+            <div className="relative inline-block w-48 text-left">
+              <button
+                type="button"
+                className="justify-between w-full h-12 bg-white border rounded-md shadow-sm dropdown-button btn text-primary-2 border-primary-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-2"
+                onClick={toggleDropdown}
+              >
+                {scheduleTime}
+                <HiChevronDown />
+              </button>
+              {/*dropdown*/}
 
-                <ul
-                  className={`dropdown-content absolute z-10 ${
-                    isOpen ? "block" : "hidden"
-                  } w-full mt-1 p-2 bg-white border border-gray-300 rounded-md shadow-lg transition ease-in-out duration-200 transform ${
-                    isOpen ? "opacity-100 scale-y-100" : "opacity-0 scale-y-95"
-                  }`}
+              <ul
+                className={`dropdown-content absolute z-10 ${
+                  isOpen ? "block" : "hidden"
+                } w-full mt-1 p-2 bg-white border border-gray-300 rounded-md shadow-lg transition ease-in-out duration-200 transform ${
+                  isOpen ? "opacity-100 scale-y-100" : "opacity-0 scale-y-95"
+                }`}
+              >
+                <li
+                  className="block px-4 py-2 text-sm text-gray-700 rounded-md cursor-pointer hover:bg-slate-200"
+                  onClick={() => handleOptionClick("Pagi")}
                 >
-                  <li
-                    className="block px-4 py-2 text-sm text-gray-700 rounded-md cursor-pointer hover:bg-slate-200"
-                    onClick={() => handleOptionClick("Pagi")}
-                  >
-                    Pagi / Management
-                  </li>
-                  <li
-                    className="block px-4 py-2 text-sm text-gray-700 rounded-md cursor-pointer hover:bg-slate-200"
-                    onClick={() => handleOptionClick("Sore")}
-                  >
-                    Sore
-                  </li>
-                  <li
-                    className="block px-4 py-2 text-sm text-gray-700 rounded-md cursor-pointer hover:bg-slate-200"
-                    onClick={() => handleOptionClick("Malam")}
-                  >
-                    Malam
-                  </li>
-                </ul>
-                {/*dropdown*/}
-              </div>
+                  Pagi / Management
+                </li>
+                <li
+                  className="block px-4 py-2 text-sm text-gray-700 rounded-md cursor-pointer hover:bg-slate-200"
+                  onClick={() => handleOptionClick("Sore")}
+                >
+                  Sore
+                </li>
+                <li
+                  className="block px-4 py-2 text-sm text-gray-700 rounded-md cursor-pointer hover:bg-slate-200"
+                  onClick={() => handleOptionClick("Malam")}
+                >
+                  Malam
+                </li>
+              </ul>
+              {/*dropdown*/}
             </div>
           </div>
-          <details className="relative dropdown dropdown-bottom dropdown-end">
-            <summary className="py-3 font-semibold text-white rounded-md btn bg-primary-2">
-              Buat sif
-              <HiChevronDown className="inline-block ml-2" />
-            </summary>
-            <ul className="absolute z-10 w-full gap-2 p-2 bg-white border rounded-md shadow-xl dropdown-content menu">
-              <li>
-                <button
-                  onClick={() => {
-                    modalShiftRef.current.open();
-                    setModalType("Create");
-                  }}
-                >
-                  Buat jadwal
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate(`/shift/allschedule/`)}>
-                  View All Employee Schedule
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => {
-                    modalShiftRef.current.open();
-                    setModalType("location");
-                  }}
-                >
-                  Buat Lokasi
-                </button>
-              </li>
-            </ul>
-          </details>
         </div>
-        {/* Search Bar */}
-        <div className="relative flex items-center w-full">
-          <HiSearch className="absolute left-4" />
-          <input
-            type="text"
-            placeholder="Cari..."
-            className="w-full pl-10 input input-bordered"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <p className="text-xs text-slate-500">{filteredSchedule.length} sif</p>
-        <div className=" overflow-auto max-h-[60vh]">
-          <DataTable
-            columns={columns}
-            data={filteredSchedule}
-            highlightOnHover
-            customStyles={customStyles}
-            onRowClicked={(row) => navigate(`/shift/${row.scheduleId}`)}
-          />
-        </div>
+        <details className="relative dropdown dropdown-bottom dropdown-end">
+          <summary className="py-3 font-semibold text-white rounded-md btn bg-primary-2">
+            Buat sif
+            <HiChevronDown className="inline-block ml-2" />
+          </summary>
+          <ul className="absolute z-10 w-full gap-2 p-2 bg-white border rounded-md shadow-xl dropdown-content menu">
+            <li>
+              <button
+                onClick={() => {
+                  modalShiftRef.current.open();
+                  setModalType("Create");
+                }}
+              >
+                Buat jadwal
+              </button>
+            </li>
+            <li>
+              <button onClick={() => navigate(`/shift/allschedule/`)}>
+                View All Employee Schedule
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  modalShiftRef.current.open();
+                  setModalType("location");
+                }}
+              >
+                Buat Lokasi
+              </button>
+            </li>
+          </ul>
+        </details>
       </div>
-    </div>
-    )}
-  </>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-56">
+          <span className="loading loading-dots loading-lg"></span>
+        </div>
+      ) : (
+        <div>
+          <Popup
+            ref={modalDelete}
+            modal
+            contentStyle={{
+              borderRadius: "12px",
+              padding: "2rem",
+              width: "25rem",
+              height: "10rem",
+            }}
+          >
+            <div className="flex flex-col items-center justify-center gap-4">
+              <h1>apakah anda yakin ingin menghapus schedule ini?</h1>
+              <div className="flex gap-4">
+                <button
+                  className=" btn bg-primary-2 w-28"
+                  onClick={() => {
+                    handleDelete(deleteId);
+                    fetchData();
+                  }}
+                >
+                  Ya
+                </button>
+                <button
+                  className="bg-red-500 btn w-28"
+                  onClick={() => {
+                    modalDelete.current.close();
+                    // setDeleteId(null);
+                  }}
+                >
+                  Tidak
+                </button>
+              </div>
+            </div>
+          </Popup>
+          <h1 className="text-xl font-medium">Schedule</h1>
+          <div className="flex flex-col gap-3">
+            {/* Search Bar */}
+            <div className="relative flex items-center w-full">
+              <HiSearch className="absolute left-4" />
+              <input
+                type="text"
+                placeholder="Cari..."
+                className="w-full pl-10 input input-bordered"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-slate-500">
+              {filteredSchedule.length} sif
+            </p>
+            <div className=" overflow-auto max-h-[60vh]">
+              <DataTable
+                columns={columns}
+                data={filteredSchedule}
+                highlightOnHover
+                customStyles={customStyles}
+                onRowClicked={(row) => navigate(`/shift/${row.scheduleId}`)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

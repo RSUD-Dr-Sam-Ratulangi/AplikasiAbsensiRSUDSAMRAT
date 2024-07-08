@@ -8,8 +8,11 @@ module.exports = {
           1: "#04F2D5",
           2: "#01A7A3",
           3: "#04837B",
-          4: "014041",
+          4: "#014041",
         },
+      },
+      fontFamily: {
+        nunito: ['"Nunito Sans"', "sans-serif"],
       },
     },
   },

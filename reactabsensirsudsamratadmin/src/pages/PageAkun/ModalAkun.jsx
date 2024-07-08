@@ -1,6 +1,5 @@
-import React, { useState, forwardRef, useEffect, useRef } from "react";
+import React, { useState, forwardRef, useEffect} from "react";
 import Popup from "reactjs-popup";
-import modalBg from "../../assets/modal-bg.png";
 import profilePicture from "../../assets/profile-picture.png";
 import {
   HiUpload,

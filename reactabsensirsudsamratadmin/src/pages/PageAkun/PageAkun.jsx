@@ -2,10 +2,15 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   HiOutlinePlusSm,
   HiSearch,
-  HiOutlinePencil,
+  HiOutlineArrowCircleDown,
   HiOutlineTrash,
+  HiOutlinePaperClip,
+  HiXCircle,
+  HiDotsCircleHorizontal,
+  HiOutlineMinus,
 } from "react-icons/hi";
 import ModalAkun from "./ModalAkun";
+import ModalPrintData from "./ModalPrintData";
 import DataTable from "react-data-table-component";
 import { api } from "../../config/axios";
 import "react-toastify/dist/ReactToastify.css";
@@ -15,13 +20,15 @@ import { toast } from "react-toastify";
 export default function PageAkun() {
   const [modalAkunType, setModalAkunType] = useState(""); // ['create', 'edit']
   const [akunData, setAkunData] = useState([]);
+  const [dataPegawai, setDataPegawai] = useState([]);
   const [selectedAkun, setSelectedAkun] = useState([]);
   const [reloadApi, setReloadApi] = useState(false);
   const modalAkun = useRef(null);
   const modalDelete = useRef(null);
+  const ModalPrintDataRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState(0);
-
+  const [isLoading, setIsLoading] = useState(false);
   const deleteSuccess = () =>
     toast("Akun berhasil di hapus", {
       position: "top-right",
@@ -33,9 +40,9 @@ export default function PageAkun() {
     });
 
   const deleteFailed = () =>
-    toast("Eror, akun tidak berhasil dihapus", {
+    toast("ERROR, MOHON DICOBA KEMBALI.", {
       position: "top-right",
-      autoClose: 5000,
+      autoClose: 6000,
       hideProgressBar: false,
       closeOnClick: true,
       theme: "light",
@@ -63,8 +70,8 @@ export default function PageAkun() {
     {
       name: "Action",
       cell: (row) => (
-        <div>
-          <button
+        <div className="flex justify-center items-center gap-3">
+          {/* <button
             type="button"
             className="mr-2 text-white btn btn-sm bg-primary-2 hover:bg-primary-3"
             onClick={() => {
@@ -72,10 +79,17 @@ export default function PageAkun() {
             }}
           >
             <HiOutlinePencil />
+          </button> */}
+          <button
+            type="button"
+            className=" text-white bg-primary-2 btn btn-sm hover:bg-gray-300"
+            onClick={() => handleCheckData(row.employeeId)}
+          >
+            <HiOutlinePaperClip />
           </button>
           <button
             type="button"
-            className="text-white bg-red-600 btn btn-sm hover:bg-red-700"
+            className=" text-white bg-red-600 btn btn-sm hover:bg-red-700"
             onClick={() => {
               setDeleteId(row.employeeId);
               modalDelete.current.open();
@@ -97,8 +111,19 @@ export default function PageAkun() {
     api
       .get("/api/v1/dev/employees")
       .then((res) => {
-        console.log(res.data);
-        setAkunData(res.data);
+        const dataEmp = res.data;
+        const data = dataEmp.sort((a, b) => {
+            if (a.name < b.name) {
+                return -1;
+            }
+            if (a.name > b.name) {
+                return 1;
+            }
+            return 0;
+        });
+        setAkunData(data);
+        console.log('employee', data);
+        
       })
       .catch((err) => {
         console.log(err);
@@ -112,18 +137,35 @@ export default function PageAkun() {
     modalAkun.current.open();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id, retryCount = 0) => {
+    const maxRetries = 3;
+    
+    setIsLoading(true);
     api
       .delete(`/api/v1/dev/employees/${id}`)
       .then((res) => {
         console.log(res.data);
         deleteSuccess();
+        setIsLoading(false);
+        window.location.reload();
       })
-      .catch((err) => {
-        console.log(err);
-        deleteFailed();
+      .catch(() => {
+        if (retryCount < maxRetries) {
+          handleDelete(id, retryCount + 1);
+        } else {
+          setIsLoading(false);
+          console.error("Failed to delete after multiple attempts.");
+          deleteFailed();
+        }
       });
+    
     modalDelete.current.close();
+  };
+  
+
+  const handleCheckData = async (id) => {
+    setDataPegawai(id);
+    ModalPrintDataRef.current.open();
   };
 
   return (
@@ -140,6 +182,7 @@ export default function PageAkun() {
           console.log("Modal closed");
         }}
       />
+      <ModalPrintData ref={ModalPrintDataRef} data={dataPegawai} />
       <Popup
         ref={modalDelete}
         modal
@@ -176,8 +219,21 @@ export default function PageAkun() {
       <div className="">
         <h1 className="text-xl font-medium">Akun</h1>
         <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-between gap-3">
+            {isLoading ? (
+              <>
+                <div className="flex justify-center gap-3">
+                  <h1 className="text-3xl animate-spin">
+                    <HiOutlineMinus />
+                  </h1>
+                  <p className="animate-pulse text-2xl">
+                    SEDANG MENGHAPUS DATA
+                  </p>
+                </div>
+              </>
+            ) : null}
             <button
+              disabled={isLoading}
               type="button"
               onClick={() => {
                 setModalAkunType("create");
