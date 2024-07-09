@@ -1,10 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  HiSearch,
-  HiOutlineTrash,
-  HiChevronDown,
-  HiOutlinePencil,
-} from "react-icons/hi";
+import { HiSearch, HiOutlineTrash, HiChevronDown, HiOutlinePencil } from "react-icons/hi";
 import DataTable from "react-data-table-component";
 import ModalShift from "./ModalShift";
 import { api } from "../../config/axios";
@@ -24,6 +19,7 @@ export default function PageShift() {
   const modalLocRef = useRef(null);
   const [schedule, setSchedule] = useState([]);
   const [filteredSchedule, setFilteredSchedule] = useState([]);
+  const [scheduleDay, setScheduleDay] = useState([]);
   const [modalType, setModalType] = useState("location");
   const [selectedSchedule, setSelectedSchedule] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +57,7 @@ export default function PageShift() {
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
+
   const columns = [
     {
       name: "ID",
@@ -111,6 +108,61 @@ export default function PageShift() {
     },
   ];
 
+  const columns2 = [
+    {
+      name: "ID",
+      selector: (row) => row.scheduleId,
+      width: "100px",
+    },
+    {
+      name: "Date",
+      selector: (row) => row.scheduleDate,
+    },
+    {
+      name: "Shift Name",
+      selector: (row) => row.shift.name,
+    },
+    {
+      name: "Shift Time",
+      selector: (row) => `${row.shift.start_time} - ${row.shift.end_time}`,
+    },
+    {
+      name: "Employee Count",
+      selector: (row) => row.employees.length,
+    },
+    {
+      name: "Location",
+      selector: (row) => row.location ?? "N/A", // Display "N/A" if location is null
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <div>
+          <button
+            type="button"
+            className="mr-2 text-white btn btn-sm bg-primary-2 hover:bg-primary-3"
+            onClick={() => {
+              handleEdit(row);
+            }}
+          >
+            <HiOutlinePencil />
+          </button>
+          <button
+            type="button"
+            className="text-white bg-red-600 btn btn-sm hover:bg-red-700"
+            onClick={() => {
+              setDeleteId(row.scheduleId);
+              modalDelete.current.open();
+            }}
+          >
+            <HiOutlineTrash />
+          </button>
+        </div>
+      ),
+    },
+  ];
+  
+
   const handleEdit = (schedule) => {
     setModalType("Edit");
     setSelectedSchedule(schedule);
@@ -155,19 +207,37 @@ export default function PageShift() {
       });
   };
 
+  const fetchData1 = () => {
+    // Function to format the date as YYYY-MM-DD
+    function formatDate(date) {
+      let year = date.getFullYear();
+      let month = (date.getMonth() + 1).toString().padStart(2, "0");
+      let day = date.getDate().toString().padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    // Get today's date and format it
+    let today = new Date();
+    let formattedDate = formatDate(today);
+
+    // Construct the URL with the formatted date
+    let url = `/api/v1/dev/schedule/date?scheduleDate=${formattedDate}`;
+
+    api
+      .get(url)
+      .then((res) => {
+        setScheduleDay(res.data);
+        console.log('hari ini punya', res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   useEffect(() => {
     // Fetch data from API
-    // api
-    //   .get("/api/v1/dev/schedule")
-    //   .then((res) => {
-    //     setSchedule(res.data);
-    //     setFilteredSchedule(res.data.reverse());
-    //     console.log(res.data);
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
     fetchData();
+    fetchData1();
   }, []);
 
   useEffect(() => {
@@ -198,13 +268,13 @@ export default function PageShift() {
   useEffect(() => {
     if (searchTerm === "") {
       setFilteredSchedule(schedule);
-
       return;
     }
     const results = schedule.filter((schedule) => {
       if (schedule.scheduleId.toString() === searchTerm) {
         return schedule;
       }
+      return null;
     });
     setFilteredSchedule(results);
   }, [schedule, searchTerm]);
@@ -271,7 +341,6 @@ export default function PageShift() {
                 <HiChevronDown />
               </button>
               {/*dropdown*/}
-
               <ul
                 className={`dropdown-content absolute z-10 ${
                   isOpen ? "block" : "hidden"
@@ -336,6 +405,16 @@ export default function PageShift() {
           </ul>
         </details>
       </div>
+      <div>
+        <label className="label">JADWAL HARI INI</label>
+        <DataTable
+          columns={columns2}
+          data={scheduleDay}
+          highlightOnHover
+          customStyles={customStyles}
+          onRowClicked={(row) => navigate(`/shift/${row.scheduleId}`)}
+        />
+      </div>
       {isLoading ? (
         <div className="flex justify-center items-center h-56">
           <span className="loading loading-dots loading-lg"></span>
@@ -368,7 +447,6 @@ export default function PageShift() {
                   className="bg-red-500 btn w-28"
                   onClick={() => {
                     modalDelete.current.close();
-                    // setDeleteId(null);
                   }}
                 >
                   Tidak
