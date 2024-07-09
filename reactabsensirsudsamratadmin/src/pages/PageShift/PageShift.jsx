@@ -9,14 +9,12 @@ import Popup from "reactjs-popup";
 import { toast } from "react-toastify";
 
 export default function PageShift() {
-  const [reloadApi, setReloadApi] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [scheduleTime, setscheduleTime] = useState("Shift");
   const [isOpen, setIsOpen] = useState(false);
   const modalShiftRef = useRef(null);
-  const modalLocRef = useRef(null);
   const [schedule, setSchedule] = useState([]);
   const [filteredSchedule, setFilteredSchedule] = useState([]);
   const [scheduleDay, setScheduleDay] = useState([]);
@@ -24,7 +22,6 @@ export default function PageShift() {
   const [selectedSchedule, setSelectedSchedule] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(0);
-  const dummyString = "null";
   const modalDelete = useRef(null);
 
   const navigate = useNavigate();

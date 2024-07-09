@@ -1,4 +1,4 @@
-import Logo from '../../assets/LOGORS2.png';
+import Logo from '../../assets/LOGORSREVISI4.png';
 import bg from '../../assets/abstract_wavy_line_geometric1.png';
 import { apiLogin } from '../../config/axios';
 import React, { useState } from 'react';
@@ -41,14 +41,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className='flex bg-white'>
+    <div className='flex bg-gray-200'>
       <div className='flex justify-center items-center w-4/6 h-screen '>
         <figure className='max-w-lg'>
           <img className='h-auto max-w-sm rounded-lg' src={Logo} alt='Logo' />
-          <p className='text text-black text-center font-bold'>
+          <p className='text text-2xl text-black text-center font-bold'>
             ABSENSI TENAGA HARIAN LEPAS
           </p>
-          <p className='text text-black  text-center font-bold'>
+          <p className='text text-2xl text-black  text-center font-bold'>
             RSUD SAMRATULANGI TONDANO
           </p>
         </figure>
@@ -66,7 +66,7 @@ export default function LoginPage() {
               <div className='card-body'>
                 <div className='form-control'>
                   <label className='label'>
-                    <span className='label-text text-black'>NIK</span>
+                    <span className='label-text text-black font-bold'>NIK</span>
                   </label>
                   <input
                     type='text'
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 </div>
                 <div className='form-control'>
                   <label className='label'>
-                    <span className='label-text text-black'>Password</span>
+                    <span className='label-text font-bold text-black'>Password</span>
                   </label>
                   <input
                     type='password'
