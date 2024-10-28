@@ -29,6 +29,8 @@ export default function PageAkun() {
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [duplicates, setDuplicates] = useState([]);
+
   const deleteSuccess = () =>
     toast("Akun berhasil di hapus", {
       position: "top-right",
@@ -123,6 +125,27 @@ export default function PageAkun() {
         });
         setAkunData(data);
         console.log('employee', data);
+        const employees = res.data;
+
+              // Check for duplicate names
+      const nameCount = {};
+      const duplicatesArray = [];
+
+      employees.forEach((employee) => {
+        const name = employee.name;
+        nameCount[name] = (nameCount[name] || 0) + 1;
+      });
+
+      // Find duplicates
+      for (const [name, count] of Object.entries(nameCount)) {
+        if (count > 1) {
+          duplicatesArray.push(name);
+        }
+      }
+
+      setDuplicates(duplicatesArray);
+
+      console.log('Duplicate Name',duplicatesArray)
         
       })
       .catch((err) => {

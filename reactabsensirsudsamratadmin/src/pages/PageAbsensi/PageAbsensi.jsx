@@ -43,6 +43,10 @@ export default function PageAbsensi() {
 
   const columns = [
     {
+      name: 'No',
+      selector: (row, index) => index + 1
+    },
+    {
       name: "Nama",
       selector: (row) => row.name,
     },

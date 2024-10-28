@@ -26,6 +26,39 @@ export default function PageShift() {
 
   const navigate = useNavigate();
 
+  // const checkDoubleSchedule = async () => {
+  //   try {
+  //     const response = await api.get('/api/v1/dev/schedule');
+      
+  //     const scheduleDates = response.data.map(item => item.scheduleDate);
+  //     const dateCount = scheduleDates.filter(date => date === '2024-09-04').length;
+      
+  //     console.log(`The date 2024-09-04 appears ${dateCount} times in the schedule.`);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+  const deleteSchedules = async () => {
+    try {
+      const response = await api.get('/api/v1/dev/schedule');
+      
+      // Filter schedules with date '2024-09-04' except the one with scheduleId 495
+      const schedulesToDelete = response.data.filter(
+        item => item.scheduleDate === '2024-11-01' && item.scheduleId !== 725
+      );
+      
+      // Delete each filtered schedule
+      for (const schedule of schedulesToDelete) {
+        await api.delete(`/api/v1/dev/schedule/${schedule.scheduleId}`);
+        console.log(`Deleted schedule with ID: ${schedule.scheduleId}`);
+      }
+  
+      console.log(`Deleted ${schedulesToDelete.length}`);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const handleOptionClick = (option) => {
     setscheduleTime(option);
     toggleDropdown();
@@ -129,7 +162,7 @@ export default function PageShift() {
     },
     {
       name: "Location",
-      selector: (row) => row.location ?? "N/A", // Display "N/A" if location is null
+      selector: (row) => row.location ?? "N/A",
     },
     {
       name: "Action",
@@ -368,6 +401,8 @@ export default function PageShift() {
             </div>
           </div>
         </div>
+        <div className="flex gap-3
+        ">
         <details className="relative dropdown dropdown-bottom dropdown-end">
           <summary className="py-3 font-semibold text-white rounded-md btn bg-primary-2">
             Buat sif
@@ -401,6 +436,9 @@ export default function PageShift() {
             </li>
           </ul>
         </details>
+        {/* <button className="btn btn-primary" onClick={deleteSchedules}>Hapus Jadwal</button> */}
+        </div>
+
       </div>
       <div>
         <label className="label">JADWAL HARI INI</label>
